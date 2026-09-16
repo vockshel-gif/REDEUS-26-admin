@@ -1,0 +1,2733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>REDEUS'26 — Admin Dashboard</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23d4af37' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><line x1='12' y1='20' x2='12' y2='10'></line><line x1='18' y1='20' x2='18' y2='4'></line><line x1='6' y1='20' x2='6' y2='16'></line></svg>">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- QR Code Generator (offline & local ready) -->
+  <script src="qrcode.min.js"></script>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    [data-lucide]{display:inline-block;width:1em;height:1em;vertical-align:middle;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+    
+    :root{
+      --bg-main: #060c07;
+      --bg-deep: #020603;
+      --bg-card: rgba(10, 24, 14, 0.88);
+      --bg-card-hover: rgba(15, 34, 20, 0.96);
+      --bg-card-solid: #09170d;
+      --bg-sidebar: rgba(4, 12, 6, 0.98);
+      
+      --gold: #f59e0b;
+      --gold-bright: #fbbf24;
+      --gold-light: #fef08a;
+      --gold-dark: #b45309;
+      --gold-glow: rgba(245, 158, 11, 0.25);
+      
+      --emerald: #10b981;
+      --emerald-bright: #34d399;
+      --amber: #f59e0b;
+      --amber-bright: #fbbf24;
+      --rose: #f43f5e;
+      --rose-bright: #fb7185;
+      --sky: #38bdf8;
+      --sky-bright: #7dd3fc;
+      
+      --text-white: #ffffff;
+      --text-primary: #f8fafc;
+      --text-secondary: #cbd5e1;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-light: rgba(255, 255, 255, 0.16);
+      --border-gold: rgba(212, 175, 55, 0.35);
+      --border-gold-strong: rgba(212, 175, 55, 0.65);
+
+      /* Legacy compatibility */
+      --text: var(--text-primary);
+      --input-bg: rgba(3, 9, 4, 0.7);
+      --input-border: rgba(255, 255, 255, 0.14);
+      --pending: #f59e0b;
+      --approved: #10b981;
+      --rejected: #f43f5e;
+      --scanned: #38bdf8;
+    }
+    
+    html{overflow-x:hidden!important;max-width:100%!important;width:100%!important}
+    body{
+      min-height:100vh;
+      overflow-x:hidden!important;
+      max-width:100%!important;
+      width:100%!important;
+      background: radial-gradient(circle at 50% -10%, #0d2615 0%, #061209 45%, #020603 100%);
+      font-family:'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color:var(--text-primary);
+      -webkit-font-smoothing:antialiased;
+    }
+    ::-webkit-scrollbar{width:6px}
+    ::-webkit-scrollbar-track{background:var(--bg-deep)}
+    ::-webkit-scrollbar-thumb{background:#2a4a30;border-radius:3px}
+    ::-webkit-scrollbar-thumb:hover{background:var(--gold)}
+
+    /* Ambient Atmosphere */
+    .light-rays-bg{
+      position:fixed;
+      top:-20%;
+      left:-10%;
+      width:140%;
+      height:140%;
+      background: radial-gradient(ellipse 65% 45% at 25% 15%, rgba(16,185,129,0.08) 0%, transparent 60%),
+                  radial-gradient(circle at 75% 20%, rgba(245,158,11,0.06) 0%, transparent 50%),
+                  radial-gradient(circle at 50% 85%, rgba(16,185,129,0.05) 0%, transparent 65%);
+      pointer-events:none;
+      z-index:0;
+    }
+
+    /* Admin Password Lock Screen */
+    .auth-lock-overlay{
+      position:fixed;
+      inset:0;
+      background: radial-gradient(ellipse 80% 70% at 50% 30%, #082010 0%, #040e06 60%, #010402 100%);
+      z-index:10000;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+      transition:opacity .35s ease,transform .35s ease;
+    }
+    .auth-lock-overlay.unlocked{opacity:0;pointer-events:none;transform:scale(1.02)}
+    .lock-card{
+      width:100%;
+      max-width:420px;
+      background:rgba(6, 18, 9, 0.96);
+      border:2px solid var(--gold);
+      outline:1.5px solid rgba(245,158,11,0.35);
+      outline-offset:-8px;
+      border-radius:18px;
+      padding:36px 28px 28px;
+      text-align:center;
+      box-shadow:0 24px 70px rgba(0,0,0,0.95),0 0 35px rgba(245,158,11,0.18);
+      position:relative;
+    }
+    .lock-card.shake{animation:lockShake .5s ease-in-out}
+    @keyframes lockShake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-9px)}40%,80%{transform:translateX(9px)}}
+    .lock-college{font-family:'Cinzel',serif;font-size:.78rem;letter-spacing:3px;color:var(--gold-bright);text-transform:uppercase;font-weight:700;margin-bottom:6px}
+    .lock-logo{max-width:240px;width:82%;height:auto;margin:4px auto 8px;display:block;filter:drop-shadow(0 4px 18px rgba(245,158,11,0.4)) drop-shadow(0 6px 25px rgba(0,0,0,0.85))}
+    .lock-subtitle{font-family:'Cinzel',serif;font-size:.74rem;letter-spacing:2px;color:var(--gold);text-transform:uppercase;font-weight:700;margin-bottom:12px}
+    .lock-divider{display:flex;align-items:center;justify-content:center;gap:10px;font-family:'Cinzel',serif;font-size:.68rem;letter-spacing:2px;color:var(--gold-bright);margin-bottom:18px}
+    .lock-divider::before,.lock-divider::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(245,158,11,0.4),transparent)}
+    .lock-desc{font-size:.84rem;color:var(--text-secondary);line-height:1.5;margin-bottom:22px}
+    .password-input-wrap{position:relative;margin-bottom:14px}
+    .password-input-wrap input{width:100%;padding:13px 44px 13px 42px;background:rgba(2,8,4,0.95);border:1px solid rgba(245,158,11,0.45);border-radius:10px;color:#fff;font-size:.95rem;font-family:inherit;outline:none;transition:all .25s}
+    .password-input-wrap input:focus{border-color:var(--gold-bright);box-shadow:0 0 16px rgba(245,158,11,0.35)}
+    .password-input-wrap .lock-icon-left{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--gold-bright);pointer-events:none;width:18px;height:18px}
+    .password-input-wrap .eye-toggle-btn{position:absolute;right:11px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-muted);cursor:pointer;padding:4px;display:flex;align-items:center;justify-content:center;transition:color .2s}
+    .password-input-wrap .eye-toggle-btn:hover{color:var(--gold-bright)}
+    .auth-error-msg{color:#f87171;font-size:.8rem;font-weight:600;margin-top:-6px;margin-bottom:14px;display:none;align-items:center;justify-content:center;gap:5px}
+    .unlock-btn{width:100%;padding:13px;background:linear-gradient(135deg,#b45309,#f59e0b,#fbbf24);color:#041006;border:none;border-radius:10px;font-family:'Cinzel',serif;font-weight:700;font-size:.92rem;letter-spacing:1.5px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;text-transform:uppercase;box-shadow:0 4px 18px rgba(245,158,11,0.35);transition:transform .2s,box-shadow .2s}
+    .unlock-btn:hover{transform:scale(1.02);box-shadow:0 6px 25px rgba(245,158,11,0.55)}
+    .lock-footer-note{font-size:.72rem;color:var(--text-muted);margin-top:20px;letter-spacing:.5px;line-height:1.4}
+
+    /* Layout & Sidebar */
+    .admin-layout{display:flex;min-height:100vh;position:relative;z-index:1}
+    .sidebar{
+      width:240px;
+      background:var(--bg-sidebar);
+      border-right:1px solid rgba(255,255,255,0.08);
+      padding:24px 16px;
+      position:fixed;
+      height:100vh;
+      display:flex;
+      flex-direction:column;
+      z-index:100;
+      box-shadow:4px 0 30px rgba(0,0,0,0.7);
+    }
+    .sidebar-brand{text-align:center;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid rgba(255,255,255,0.08)}
+    .sidebar-logo-wrap{max-width:165px;margin:0 auto 6px}
+    .sidebar-logo{width:100%;height:auto;display:block;filter:drop-shadow(0 2px 10px rgba(245,158,11,0.35))}
+    .sidebar-college-name{font-size:.74rem;font-weight:600;color:var(--text-muted);letter-spacing:.05em;margin-top:4px;text-transform:uppercase}
+    .sidebar-badge{display:inline-block;font-size:.62rem;letter-spacing:1.5px;padding:3px 10px;background:rgba(245,158,11,0.12);color:var(--gold-bright);border:1px solid rgba(245,158,11,0.35);border-radius:20px;text-transform:uppercase;font-weight:700;margin-top:6px}
+    .nav-links{list-style:none;flex:1;margin-top:8px}
+    .nav-links li{margin-bottom:6px}
+    .nav-links a{
+      display:flex;
+      align-items:center;
+      gap:11px;
+      padding:10px 14px;
+      border-radius:10px;
+      color:var(--text-muted);
+      text-decoration:none;
+      font-size:.86rem;
+      font-weight:500;
+      transition:all .2s;
+      border-left:3px solid transparent;
+      cursor:pointer;
+    }
+    .nav-links a:hover{color:var(--text-white);background:rgba(255,255,255,0.05)}
+    .nav-links a.active{
+      color:#ffffff;
+      background:linear-gradient(90deg,rgba(245,158,11,0.18) 0%,rgba(245,158,11,0.04) 100%);
+      border-left-color:var(--gold-bright);
+      font-weight:600;
+    }
+    .nav-ext-icon{margin-left:auto;opacity:.5;width:13px;height:13px}
+
+    /* Pinned Sidebar Financial Widget */
+    .sidebar-financial-widget{
+      background:rgba(245,158,11,0.08);
+      border:1px solid rgba(245,158,11,0.25);
+      border-radius:12px;
+      padding:14px;
+      margin-top:auto;
+      margin-bottom:12px;
+    }
+    .sf-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+    .sf-tag{font-size:.65rem;font-weight:700;letter-spacing:.08em;color:var(--gold-bright);display:flex;align-items:center;gap:5px}
+    .sf-amount{font-size:1.25rem;font-weight:800;color:#ffffff;letter-spacing:-.01em;margin-bottom:3px}
+    .sf-sub{font-size:.72rem;color:var(--text-muted)}
+    .sidebar-footer{padding-top:12px;border-top:1px solid rgba(255,255,255,0.08)}
+    .sidebar-logout-btn{
+      width:100%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      padding:10px 12px;
+      border-radius:9px;
+      background:rgba(244,63,94,0.12);
+      color:#fb7185;
+      border:1px solid rgba(244,63,94,0.35);
+      font-size:.8rem;
+      font-weight:600;
+      cursor:pointer;
+      transition:all .2s;
+    }
+    .sidebar-logout-btn:hover{background:rgba(244,63,94,0.25);border-color:#fb7185;color:#fff}
+
+    /* Main Content */
+    .main-content{margin-left:240px;flex:1;padding:26px 36px;min-height:100vh}
+    .page-header{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:24px;
+      padding-bottom:18px;
+      border-bottom:1px solid rgba(255,255,255,0.08);
+      flex-wrap:wrap;
+      gap:16px;
+    }
+    .header-title-wrap{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+    .page-title{
+      font-family:'Cinzel',serif;
+      font-size:1.4rem;
+      font-weight:700;
+      color:#ffffff;
+      letter-spacing:.5px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .page-title i{color:var(--gold-bright)}
+    .system-status-pill{
+      display:inline-flex;
+      align-items:center;
+      gap:7px;
+      background:rgba(16,185,129,0.14);
+      border:1px solid rgba(16,185,129,0.45);
+      color:var(--emerald-bright);
+      font-size:.7rem;
+      font-weight:700;
+      padding:4px 12px;
+      border-radius:20px;
+      letter-spacing:.06em;
+      text-transform:uppercase;
+    }
+    .pulsing-dot{width:7px;height:7px;border-radius:50%;background:var(--emerald);box-shadow:0 0 8px var(--emerald);animation:dotPulse 1.8s infinite ease-in-out}
+    @keyframes dotPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.3;transform:scale(.75)}}
+    
+    .header-actions{display:flex;align-items:center;gap:10px}
+    .header-btn{
+      display:inline-flex;
+      align-items:center;
+      gap:7px;
+      padding:8px 14px;
+      border-radius:9px;
+      background:rgba(255,255,255,0.05);
+      border:1px solid rgba(255,255,255,0.12);
+      color:var(--text-primary);
+      font-size:.82rem;
+      font-weight:600;
+      text-decoration:none;
+      cursor:pointer;
+      transition:all .2s;
+    }
+    .header-btn:hover{background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.25);color:#fff;transform:translateY(-1px)}
+    .header-btn-primary{
+      background:linear-gradient(135deg,rgba(16,185,129,0.25) 0%,rgba(5,150,105,0.35) 100%);
+      border:1px solid rgba(16,185,129,0.6);
+      color:#34d399;
+    }
+    .header-btn-primary:hover{background:#10b981;color:#031407;box-shadow:0 0 16px rgba(16,185,129,0.45)}
+    .notification-bell{position:relative;cursor:pointer;font-size:1.2rem;padding:8px;color:var(--text-secondary);transition:color .2s}
+    .notification-bell:hover{color:#fff}
+    .bell-badge{position:absolute;top:2px;right:2px;background:var(--rose);color:#fff;border-radius:50%;min-width:18px;height:18px;font-size:.65rem;display:flex;align-items:center;justify-content:center;font-weight:700}
+
+    /* Executive Metrics Grid */
+    .stats-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+      gap:16px;
+      margin-bottom:24px;
+    }
+    .stat-card{
+      background:var(--bg-card);
+      border:1px solid var(--border-subtle);
+      border-radius:16px;
+      padding:20px 22px;
+      position:relative;
+      overflow:hidden;
+      transition:all .22s ease;
+      box-shadow:0 8px 24px rgba(0,0,0,0.4);
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+      min-height:148px;
+    }
+    .stat-card:hover{
+      transform:translateY(-2px);
+      box-shadow:0 14px 30px rgba(0,0,0,0.6);
+      border-color:var(--border-light);
+    }
+    .stat-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+    .stat-pill-badge{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      font-size:.7rem;
+      font-weight:700;
+      letter-spacing:.06em;
+      text-transform:uppercase;
+      padding:4px 10px;
+      border-radius:8px;
+    }
+    .stat-pill-badge i{width:14px;height:14px}
+    .stat-pill-badge.gold{background:rgba(245,158,11,0.15);color:var(--gold-bright);border:1px solid rgba(245,158,11,0.35)}
+    .stat-pill-badge.neutral{background:rgba(255,255,255,0.08);color:var(--text-primary);border:1px solid rgba(255,255,255,0.14)}
+    .stat-pill-badge.amber{background:rgba(245,158,11,0.15);color:var(--amber-bright);border:1px solid rgba(245,158,11,0.35)}
+    .stat-pill-badge.green{background:rgba(16,185,129,0.15);color:var(--emerald-bright);border:1px solid rgba(16,185,129,0.35)}
+    .stat-pill-badge.blue{background:rgba(56,189,248,0.15);color:var(--sky-bright);border:1px solid rgba(56,189,248,0.35)}
+    .stat-pill-badge.red{background:rgba(244,63,94,0.15);color:var(--rose-bright);border:1px solid rgba(244,63,94,0.35)}
+
+    .stat-context-chip, .stat-rate-chip{
+      font-size:.68rem;
+      font-weight:600;
+      color:var(--text-muted);
+      background:rgba(255,255,255,0.04);
+      padding:3px 8px;
+      border-radius:6px;
+      border:1px solid rgba(255,255,255,0.06);
+    }
+    .stat-context-chip.amber{color:var(--amber-bright);background:rgba(245,158,11,0.1);border-color:rgba(245,158,11,0.25)}
+    .stat-context-chip.green{color:var(--emerald-bright);background:rgba(16,185,129,0.1);border-color:rgba(16,185,129,0.25)}
+    .stat-context-chip.blue{color:var(--sky-bright);background:rgba(56,189,248,0.1);border-color:rgba(56,189,248,0.25)}
+    .stat-context-chip.red{color:var(--rose-bright);background:rgba(244,63,94,0.1);border-color:rgba(244,63,94,0.25)}
+
+    .stat-value-wrap{margin:4px 0 8px}
+    .stat-number{
+      font-size:2.35rem;
+      font-weight:800;
+      letter-spacing:-.02em;
+      line-height:1.05;
+      font-family:'Inter',sans-serif;
+    }
+    .stat-gold{color:var(--gold-bright);text-shadow:0 0 20px rgba(245,158,11,0.35)}
+    .stat-white{color:#ffffff}
+    .stat-amber{color:var(--amber-bright)}
+    .stat-emerald{color:var(--emerald-bright)}
+    .stat-sky{color:var(--sky-bright)}
+    .stat-rose{color:var(--rose-bright)}
+
+    .stat-card-footer{margin-top:auto}
+    .stat-footer-note{font-size:.74rem;font-weight:500;color:var(--text-muted)}
+    .stat-footer-highlight{font-size:.76rem;font-weight:500;display:flex;align-items:center;gap:6px}
+    .stat-footer-highlight.amber{color:#fde047}
+    .status-indicator-dot{width:7px;height:7px;border-radius:50%;display:inline-block}
+    .status-indicator-dot.green{background:#10b981;box-shadow:0 0 6px #10b981}
+    .status-indicator-dot.amber{background:#f59e0b;box-shadow:0 0 6px #f59e0b}
+    .status-indicator-dot.red{background:#f43f5e;box-shadow:0 0 6px #f43f5e}
+
+    .stat-card.revenue{
+      background:linear-gradient(135deg,rgba(245,158,11,0.15) 0%,rgba(16,185,129,0.08) 40%,rgba(8,20,12,0.95) 100%);
+      border:1.5px solid rgba(245,158,11,0.5);
+      box-shadow:0 10px 28px rgba(0,0,0,0.6),0 0 24px rgba(245,158,11,0.12);
+    }
+    .stat-card.total{
+      background:linear-gradient(135deg,rgba(255,255,255,0.06) 0%,rgba(10,24,14,0.95) 100%);
+      border-color:rgba(255,255,255,0.14);
+    }
+    .stat-card.pending{
+      background:linear-gradient(135deg,rgba(245,158,11,0.12) 0%,rgba(22,14,4,0.95) 100%);
+      border-color:rgba(245,158,11,0.4);
+    }
+    .stat-card.approved{
+      background:linear-gradient(135deg,rgba(16,185,129,0.12) 0%,rgba(4,22,11,0.95) 100%);
+      border-color:rgba(16,185,129,0.4);
+    }
+    .stat-card.scanned{
+      background:linear-gradient(135deg,rgba(56,189,248,0.12) 0%,rgba(4,16,26,0.95) 100%);
+      border-color:rgba(56,189,248,0.4);
+    }
+    .stat-card.rejected{
+      background:linear-gradient(135deg,rgba(244,63,94,0.1) 0%,rgba(22,5,7,0.95) 100%);
+      border-color:rgba(244,63,94,0.35);
+    }
+
+    /* Table Control Bar (Search + Filter Tabs + Live Sync) */
+    .table-control-bar{
+      background:var(--bg-card);
+      border:1px solid var(--border-subtle);
+      border-radius:14px;
+      padding:14px 18px;
+      margin-bottom:16px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:16px;
+      flex-wrap:wrap;
+      box-shadow:0 4px 16px rgba(0,0,0,0.3);
+    }
+    .control-left{display:flex;align-items:center;gap:14px;flex-wrap:wrap;flex:1}
+    .control-right{display:flex;align-items:center;gap:12px}
+    .search-input-wrap{position:relative;min-width:260px;max-width:380px;flex:1}
+    .search-input-wrap input{
+      width:100%;
+      padding:9px 34px 9px 36px;
+      background:rgba(3,9,4,0.7);
+      border:1px solid rgba(255,255,255,0.12);
+      border-radius:10px;
+      color:#ffffff;
+      font-size:.84rem;
+      font-family:inherit;
+      outline:none;
+      transition:all .2s;
+    }
+    .search-input-wrap input:focus{
+      border-color:var(--gold-bright);
+      background:rgba(3,9,4,0.95);
+      box-shadow:0 0 14px rgba(245,158,11,0.25);
+    }
+    .search-input-wrap .search-icon{
+      position:absolute;
+      left:11px;
+      top:50%;
+      transform:translateY(-50%);
+      color:var(--text-muted);
+      width:15px;
+      height:15px;
+      pointer-events:none;
+    }
+    .search-clear-btn{
+      position:absolute;
+      right:9px;
+      top:50%;
+      transform:translateY(-50%);
+      background:rgba(255,255,255,0.1);
+      border:none;
+      border-radius:50%;
+      width:18px;
+      height:18px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:var(--text-muted);
+      font-size:10px;
+      cursor:pointer;
+    }
+    .search-clear-btn:hover{color:#fff;background:rgba(255,255,255,0.2)}
+
+    .filter-tabs{display:flex;gap:6px;flex-wrap:wrap}
+    .filter-tab{
+      display:inline-flex;
+      align-items:center;
+      gap:7px;
+      padding:7px 14px;
+      border-radius:9px;
+      border:1px solid rgba(255,255,255,0.08);
+      background:rgba(255,255,255,0.03);
+      color:var(--text-muted);
+      cursor:pointer;
+      font-size:.82rem;
+      font-weight:600;
+      font-family:inherit;
+      transition:all .2s;
+    }
+    .filter-tab:hover{
+      border-color:rgba(255,255,255,0.2);
+      color:#ffffff;
+      background:rgba(255,255,255,0.07);
+    }
+    .filter-tab.active{
+      background:linear-gradient(135deg,#b45309,#f59e0b,#fbbf24);
+      color:#041006;
+      border-color:transparent;
+      font-weight:700;
+      box-shadow:0 4px 14px rgba(245,158,11,0.35);
+    }
+    .tab-counter{
+      display:inline-block;
+      padding:1px 7px;
+      border-radius:12px;
+      font-size:.7rem;
+      font-weight:700;
+      background:rgba(255,255,255,0.12);
+      color:inherit;
+    }
+    .filter-tab.active .tab-counter{background:rgba(3,10,5,0.3);color:#041006}
+    .tab-counter.counter-amber{background:rgba(245,158,11,0.2);color:#fbbf24}
+    .tab-counter.counter-green{background:rgba(16,185,129,0.2);color:#34d399}
+    .tab-counter.counter-red{background:rgba(244,63,94,0.2);color:#fb7185}
+
+    .live-sync-pill{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      font-size:.74rem;
+      color:var(--text-muted);
+      padding:5px 10px;
+      background:rgba(255,255,255,0.04);
+      border-radius:8px;
+      border:1px solid rgba(255,255,255,0.06);
+    }
+    .pulsing-beacon{
+      width:6px;
+      height:6px;
+      border-radius:50%;
+      background:var(--emerald);
+      box-shadow:0 0 6px var(--emerald);
+      animation:beaconPulse 1.8s infinite;
+    }
+    @keyframes beaconPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.3;transform:scale(.8)}}
+    .btn-refresh{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:7px 12px;
+      border-radius:8px;
+      background:rgba(245,158,11,0.1);
+      border:1px solid rgba(245,158,11,0.3);
+      color:var(--gold-bright);
+      font-size:.78rem;
+      font-weight:600;
+      cursor:pointer;
+      transition:all .2s;
+    }
+    .btn-refresh:hover{
+      background:rgba(245,158,11,0.2);
+      border-color:var(--gold-bright);
+      color:#fff;
+    }
+
+    /* Table & Container Styling */
+    .table-container{
+      background:var(--bg-card);
+      border:1px solid var(--border-subtle);
+      border-radius:16px;
+      overflow-x:auto;
+      box-shadow:0 14px 40px rgba(0,0,0,0.6);
+      margin-top:6px;
+    }
+    table{width:100%;border-collapse:separate;border-spacing:0;text-align:left}
+    th{
+      background:rgba(14,28,18,0.95);
+      color:var(--text-secondary);
+      padding:14px 18px;
+      font-size:.74rem;
+      font-weight:700;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      border-bottom:1px solid rgba(255,255,255,0.1);
+      white-space:nowrap;
+    }
+    th i{width:13px;height:13px;margin-right:4px;color:var(--gold-bright);vertical-align:text-top}
+    td{
+      padding:13px 18px;
+      font-size:.88rem;
+      color:var(--text-primary);
+      border-bottom:1px solid rgba(255,255,255,0.06);
+      vertical-align:middle;
+    }
+    tr{transition:background .15s ease}
+    tr:hover{background:rgba(255,255,255,0.035)}
+
+    /* Attendee Cell */
+    .attendee-cell-wrap{display:flex;align-items:center;gap:12px}
+    .attendee-avatar{
+      width:36px;
+      height:36px;
+      border-radius:10px;
+      background:linear-gradient(135deg,rgba(245,158,11,0.25) 0%,rgba(16,185,129,0.2) 100%);
+      border:1px solid rgba(245,158,11,0.4);
+      color:var(--gold-bright);
+      font-weight:700;
+      font-size:.78rem;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex-shrink:0;
+      letter-spacing:.5px;
+    }
+    .attendee-info{display:flex;flex-direction:column;gap:2px}
+    .attendee-name-text{
+      font-size:.94rem;
+      font-weight:600;
+      color:#ffffff;
+      letter-spacing:.2px;
+    }
+    .ticket-num-badge{
+      display:inline-flex;
+      align-items:center;
+      gap:4px;
+      font-family:'JetBrains Mono',monospace;
+      font-size:.72rem;
+      font-weight:600;
+      color:var(--gold-bright);
+      background:rgba(245,158,11,0.1);
+      border:1px solid rgba(245,158,11,0.25);
+      padding:1px 7px;
+      border-radius:6px;
+      width:fit-content;
+      cursor:pointer;
+      transition:all .15s;
+    }
+    .ticket-num-badge:hover{
+      background:rgba(245,158,11,0.22);
+      border-color:var(--gold-bright);
+      color:#fff;
+    }
+
+    .phone-cell-wrap{display:flex;align-items:center;gap:6px}
+    .phone-text{
+      font-family:'JetBrains Mono',monospace;
+      font-size:.85rem;
+      color:#93c5fd;
+      font-weight:500;
+    }
+    .phone-copy-btn{
+      background:none;
+      border:none;
+      color:var(--text-muted);
+      cursor:pointer;
+      padding:2px;
+      display:flex;
+      align-items:center;
+      transition:color .15s;
+    }
+    .phone-copy-btn:hover{color:#ffffff}
+    .batch-text{font-size:.85rem;color:var(--text-secondary);font-weight:500}
+    .qty-pill{
+      display:inline-block;
+      padding:3px 10px;
+      background:rgba(255,255,255,0.06);
+      border:1px solid rgba(255,255,255,0.14);
+      border-radius:12px;
+      font-size:.76rem;
+      font-weight:700;
+      color:#ffffff;
+      white-space:nowrap;
+    }
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:4px 12px;
+      border-radius:20px;
+      font-size:.72rem;
+      font-weight:700;
+      letter-spacing:.04em;
+      text-transform:uppercase;
+      white-space:nowrap;
+    }
+    .badge-pending{background:rgba(245,158,11,0.16);color:#fbbf24;border:1px solid rgba(245,158,11,0.45)}
+    .badge-approved{background:rgba(16,185,129,0.16);color:#34d399;border:1px solid rgba(16,185,129,0.45)}
+    .badge-rejected{background:rgba(244,63,94,0.16);color:#fb7185;border:1px solid rgba(244,63,94,0.45)}
+    .date-text{font-size:.78rem;color:var(--text-muted);white-space:nowrap;font-weight:500}
+    .action-buttons{display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+
+    /* Modern Buttons */
+    .btn{
+      padding:6px 13px;
+      border-radius:8px;
+      font-size:.78rem;
+      font-weight:600;
+      font-family:inherit;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      gap:5px;
+      white-space:nowrap;
+      transition:all .18s ease;
+    }
+    .btn-gold{
+      background:rgba(245,158,11,0.12);
+      border:1px solid rgba(245,158,11,0.4);
+      color:var(--gold-bright);
+    }
+    .btn-gold:hover{
+      background:linear-gradient(135deg,#b45309,#f59e0b);
+      border-color:transparent;
+      color:#041006;
+      box-shadow:0 4px 12px rgba(245,158,11,0.35);
+    }
+    .btn-green{
+      background:rgba(16,185,129,0.16);
+      border:1px solid rgba(16,185,129,0.5);
+      color:#34d399;
+    }
+    .btn-green:hover{
+      background:#10b981;
+      border-color:transparent;
+      color:#031407;
+      box-shadow:0 4px 12px rgba(16,185,129,0.4);
+    }
+    .btn-red{
+      background:rgba(244,63,94,0.14);
+      border:1px solid rgba(244,63,94,0.45);
+      color:#fb7185;
+    }
+    .btn-red:hover{
+      background:#f43f5e;
+      border-color:transparent;
+      color:#fff;
+      box-shadow:0 4px 12px rgba(244,63,94,0.4);
+    }
+    .btn-whatsapp{
+      background:rgba(37,211,102,0.16);
+      border:1px solid rgba(37,211,102,0.5);
+      color:#25D366;
+    }
+    .btn-whatsapp:hover{
+      background:#25D366;
+      border-color:transparent;
+      color:#031407;
+      box-shadow:0 4px 12px rgba(37,211,102,0.45);
+    }
+
+    /* Empty State Card */
+    .empty-state{padding:40px 20px!important;text-align:center}
+    .empty-state-card{max-width:380px;margin:0 auto;text-align:center;padding:20px}
+    .empty-icon-wrap{
+      width:64px;
+      height:64px;
+      border-radius:50%;
+      background:rgba(245,158,11,0.12);
+      border:1px solid rgba(245,158,11,0.3);
+      color:var(--gold-bright);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      margin:0 auto 16px;
+    }
+    .empty-title{font-size:1.05rem;font-weight:700;color:#ffffff;margin-bottom:6px}
+    .empty-desc{font-size:.82rem;color:var(--text-muted);line-height:1.5}
+
+    /* Modal Figure 1 Ticket Pass Preview */
+    .modal-ticket-preview{max-width:440px!important;padding:22px!important;background:#030c05!important;border:1px solid rgba(212,175,55,0.4)!important}
+    .modal-pass-card{background:#041306;border:2px solid var(--gold);outline:1.5px solid rgba(212,175,55,0.4);outline-offset:-8px;border-radius:14px;padding:28px 20px 22px;text-align:center;box-shadow:0 14px 40px rgba(0,0,0,0.8),0 0 25px rgba(212,175,55,0.12)}
+    .modal-college-header{font-family:'Cinzel',serif;font-size:.76rem;letter-spacing:2.5px;color:var(--gold-bright);text-transform:uppercase;font-weight:600;margin-bottom:6px}
+    .modal-title-stage{max-width:240px;margin:3px auto 6px}
+    .modal-title-stage img{width:100%;height:auto;display:block;filter:drop-shadow(0 4px 14px rgba(212,175,55,0.4)) drop-shadow(0 6px 20px rgba(0,0,0,0.8))}
+    .modal-event-tagline{font-style:italic;font-size:.76rem;color:var(--gold);opacity:.85;margin-bottom:10px}
+    .modal-pass-divider{display:flex;align-items:center;justify-content:center;gap:8px;font-family:'Cinzel',serif;font-size:.68rem;letter-spacing:2px;color:var(--gold-bright);margin-bottom:16px}
+    .modal-pass-divider::before,.modal-pass-divider::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(212,175,55,0.4),transparent)}
+    .modal-qr-frame{background:#fff;padding:10px;border-radius:14px;display:inline-block;box-shadow:0 8px 25px rgba(0,0,0,0.65);margin-bottom:16px}
+    .modal-qr-frame img{width:190px;height:190px;display:block;border-radius:4px}
+    .modal-student-name{font-family:'Cinzel',serif;font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:1px;text-transform:uppercase;margin-bottom:15px;text-shadow:0 2px 10px rgba(0,0,0,0.6)}
+    .modal-pass-details-box{background:rgba(7,24,10,0.75);border:1px solid rgba(212,175,55,0.28);border-radius:10px;padding:12px 14px;display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+    .modal-detail-col:first-child{border-right:1px solid rgba(212,175,55,0.2)}
+    .modal-col-lbl{font-size:.64rem;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;display:block;font-weight:600}
+    .modal-col-val{font-family:'Cinzel',serif;font-size:.92rem;font-weight:700;color:var(--gold-bright);display:block}
+    .modal-mono-code{font-family:'JetBrains Mono',monospace;font-size:.88rem;color:var(--gold-bright)}
+    .modal-pass-instruction{font-size:.72rem;color:var(--text-muted);margin-bottom:6px}
+    .modal-pass-batch{font-family:'Cinzel',serif;font-size:.65rem;letter-spacing:1.5px;color:var(--gold-dark);text-transform:uppercase}
+
+    /* Grouped "Paid Together" Styling */
+    tr.tr-grouped {
+      background: rgba(245,158,11,0.035);
+      border-left: 4px solid var(--gold) !important;
+      transition: background 0.2s ease, border-left-color 0.2s ease;
+    }
+    tr.tr-grouped.tr-group-first {
+      border-top: 1px solid rgba(245,158,11,0.3) !important;
+    }
+    tr.tr-grouped.tr-group-middle {
+      border-top: 1px dashed rgba(245,158,11,0.18) !important;
+    }
+    tr.tr-grouped.tr-group-last {
+      border-top: 1px dashed rgba(245,158,11,0.18) !important;
+      border-bottom: 2px solid rgba(245,158,11,0.35) !important;
+    }
+    tr.tr-grouped.group-hover, tr.tr-grouped:hover {
+      background: rgba(245,158,11,0.08) !important;
+      border-left-color: var(--gold-bright) !important;
+    }
+    .paid-together-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(245,158,11,0.12);
+      color: var(--gold-bright);
+      border: 1px solid rgba(245,158,11,0.35);
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: .68rem;
+      font-weight: 600;
+      letter-spacing: .3px;
+      margin-top: 4px;
+      white-space: nowrap;
+    }
+    .paid-together-badge i {
+      color: var(--gold-bright);
+    }
+    .attendee-id-sub {
+      display: block;
+      font-size: .72rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+      font-family: monospace;
+      letter-spacing: .5px;
+    }
+    .group-receipt-banner {
+      background: rgba(245,158,11,0.1);
+      border: 1px solid rgba(245,158,11,0.35);
+      border-radius: 8px;
+      padding: 10px 14px;
+      margin-bottom: 14px;
+    }
+    .group-receipt-banner .banner-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--gold-bright);
+      font-weight: 700;
+      font-size: .88rem;
+    }
+    .group-receipt-banner .banner-sub {
+      font-size: .75rem;
+      color: var(--text-muted);
+      margin-top: 3px;
+    }
+    .group-attendee-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(245,158,11,0.08);
+      border: 1px solid rgba(245,158,11,0.25);
+      border-radius: 6px;
+      padding: 4px 8px;
+      margin-right: 6px;
+      margin-top: 5px;
+      font-size: .78rem;
+    }
+
+    /* Modals */
+    .modal{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(6px)}
+    .modal.active{display:flex}
+    .modal-content{background:#08160c;border:1px solid rgba(245,158,11,0.4);border-radius:18px;padding:25px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto;position:relative;box-shadow:0 24px 70px rgba(0,0,0,0.9)}
+    .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,0.08)}
+    .modal-title{font-family:'Cinzel',serif;color:var(--gold-bright);font-size:1.1rem;font-weight:700}
+    .modal-close{background:none;border:none;color:var(--text-muted);font-size:1.4rem;cursor:pointer;padding:4px}
+    .modal-close:hover{color:#fff}
+    .modal-footer{display:flex;gap:10px;justify-content:flex-end;margin-top:18px}
+    .modal-btn{padding:10px 20px;border-radius:8px;border:none;font-family:inherit;font-weight:600;cursor:pointer;font-size:.85rem;transition:all .2s}
+    .modal-btn-approve{background:var(--emerald);color:#041408;font-weight:700}
+    .modal-btn-approve:hover{box-shadow:0 0 14px rgba(16,185,129,0.5)}
+    .modal-btn-reject{background:var(--rose);color:#fff}
+    .modal-btn-reject:hover{box-shadow:0 0 14px rgba(244,63,94,0.5)}
+    .modal-btn-gold{background:linear-gradient(135deg,#b45309,#f59e0b);color:#041006;font-weight:700}
+    .modal-btn-outline{background:transparent;border:1px solid rgba(255,255,255,0.15);color:var(--text-primary)}
+    .modal-btn-outline:hover{border-color:#fff;color:#fff}
+    .qr-image{display:block;margin:10px auto;max-width:280px;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.1)}
+    .ticket-info-card{background:rgba(3,10,5,0.85);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:14px 18px;margin-bottom:15px}
+    .ticket-info-row{display:flex;justify-content:space-between;padding:5px 0;font-size:.86rem}
+    .ticket-info-label{color:var(--text-muted)}.ticket-info-value{font-weight:600;color:#fff}
+    .reject-textarea{width:100%;min-height:80px;padding:12px;background:rgba(3,10,5,0.85);border:1px solid rgba(255,255,255,0.15);border-radius:8px;color:#fff;font-family:inherit;font-size:.9rem;resize:vertical;outline:none}
+    .reject-textarea:focus{border-color:var(--gold-bright)}
+
+    .page{display:none}.page.active{display:block}
+
+    .toast-container{position:fixed;top:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:10px}
+    .toast{background:rgba(8,20,12,0.96);border:1px solid var(--gold-bright);border-radius:10px;padding:12px 18px;font-size:.85rem;min-width:260px;max-width:360px;transform:translateX(120%);transition:transform .3s ease;box-shadow:0 8px 24px rgba(0,0,0,0.6)}
+    .toast.show{transform:translateX(0)}
+    .toast.error{border-color:var(--rose);color:#fca5a5}
+    .toast.success{border-color:var(--emerald);color:#86efac}
+
+    .mobile-header{display:none;background:var(--bg-sidebar);border-bottom:1px solid rgba(255,255,255,0.08);padding:12px 20px;align-items:center;justify-content:space-between}
+    .mobile-header h1{font-family:'Cinzel',serif;font-size:1rem;background:linear-gradient(135deg,var(--gold-dark),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .hamburger{background:none;border:none;color:var(--gold-bright);font-size:1.3rem;cursor:pointer}
+    @media(max-width:900px){
+      .sidebar{display:none}
+      .sidebar.mobile-open{display:flex;width:100%;position:fixed;z-index:200}
+      .mobile-header{display:flex}
+      .main-content{margin-left:0;padding:18px 14px}
+      .stats-grid{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+      td,th{padding:10px 8px;font-size:.78rem}
+      .hide-mobile{display:none}
+      .action-buttons{flex-direction:column}
+      .table-control-bar{flex-direction:column;align-items:stretch}
+      .control-left{flex-direction:column;align-items:stretch}
+      .search-input-wrap{max-width:none}
+    }
+  </style>
+</head>
+<body>
+  <div class="light-rays-bg"></div>
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Committee Password Lock Screen Overlay -->
+  <div class="auth-lock-overlay" id="authLockOverlay">
+    <div class="lock-card" id="lockCard">
+      <p class="lock-college">ST. BENEDICT'S COLLEGE</p>
+      <div class="lock-logo-wrap">
+        <img src="redeus-title.png" alt="REDEUS'26" class="lock-logo" onerror="this.style.display='none'; document.getElementById('lockTitleFallback').style.display='block';">
+        <h1 id="lockTitleFallback" style="display:none; font-family:'Cinzel',serif; font-size:2rem; color:var(--gold); font-weight:700; margin-bottom:10px;">REDEUS'26</h1>
+      </div>
+      <p class="lock-subtitle">EXECUTIVE COMMITTEE PORTAL</p>
+      <div class="lock-divider"><span>◆</span> RESTRICTED ACCESS <span>◆</span></div>
+      <p class="lock-desc">Enter the committee password to access ticket approvals, verification records, and live system controls.</p>
+      <form id="adminAuthForm" onsubmit="handleAdminLogin(event)">
+        <div class="password-input-wrap">
+          <i data-lucide="shield-check" class="lock-icon-left"></i>
+          <input type="password" id="adminPasswordInput" placeholder="Enter Committee Password" autocomplete="current-password" required autofocus>
+          <button type="button" class="eye-toggle-btn" onclick="togglePasswordVisibility()" title="Show/Hide Password">
+            <i data-lucide="eye" id="eyeIcon"></i>
+          </button>
+        </div>
+        <div class="auth-error-msg" id="authErrorMsg">
+          <i data-lucide="alert-circle" style="width:14px;height:14px;"></i> Incorrect password. Access denied.
+        </div>
+        <button type="submit" class="unlock-btn" id="unlockBtn">
+          <i data-lucide="key-round"></i> Unlock Dashboard
+        </button>
+      </form>
+      <p class="lock-footer-note">Authorized Committee Personnel Only<br>REDEUS'26 • Official Executive Gateway</p>
+    </div>
+  </div>
+
+  <div class="mobile-header">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <img src="redeus-title.png" alt="REDEUS'26" style="height:28px;width:auto;">
+    </div>
+    <button class="hamburger" onclick="document.getElementById('sidebar').classList.toggle('mobile-open')"><i data-lucide="menu"></i></button>
+  </div>
+
+  <div class="admin-layout">
+    <nav class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <div class="sidebar-logo-wrap">
+          <img src="redeus-title.png" alt="REDEUS'26" class="sidebar-logo" onerror="this.style.display='none'; document.getElementById('sidebarTitleFallback').style.display='block';">
+          <h1 id="sidebarTitleFallback" style="display:none; font-family:'Cinzel',serif; font-size:1.3rem; color:var(--gold);">REDEUS'26</h1>
+        </div>
+        <span class="sidebar-badge">COMMITTEE PORTAL</span>
+      </div>
+      <ul class="nav-links">
+        <li><a class="active" onclick="showPage('dashboard',this)"><i data-lucide="layout-dashboard"></i> Dashboard</a></li>
+      </ul>
+      <div class="sidebar-footer">
+        <button class="sidebar-logout-btn" onclick="logoutAdmin()">
+          <i data-lucide="lock"></i> Lock Dashboard
+        </button>
+      </div>
+    </nav>
+
+    <main class="main-content">
+      <div class="page active" id="page-dashboard">
+        <div class="page-header">
+          <div class="header-title-wrap">
+            <h2 class="page-title"><i data-lucide="layout-dashboard"></i> Executive Dashboard</h2>
+            <span class="system-status-pill"><span class="pulsing-dot"></span> LIVE SYSTEM</span>
+          </div>
+          <div class="header-actions">
+            <button class="header-btn" onclick="exportToExcel()"><i data-lucide="file-spreadsheet"></i> Export to Excel</button>
+            <button class="header-btn" onclick="openExcelSyncModal()"><i data-lucide="sheet"></i> Connect Sheets</button>
+            <button class="header-btn" onclick="loadTickets()"><i data-lucide="refresh-cw"></i> Refresh</button>
+            <div class="notification-bell" id="bellIcon" title="Pending Notifications"><i data-lucide="bell"></i><span class="bell-badge" id="bellBadge" style="display:none">0</span></div>
+          </div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card revenue">
+            <div class="stat-card-header">
+              <span class="stat-pill-badge gold"><i data-lucide="banknote"></i> FUNDS COLLECTED</span>
+              <span class="stat-context-chip amber" id="stat-revenue-rate">@ Rs. 8,000</span>
+            </div>
+            <div class="stat-value-wrap">
+              <div class="stat-number stat-gold" id="stat-revenue">Rs. 0</div>
+            </div>
+            <div class="stat-card-footer">
+              <div class="stat-footer-highlight amber" id="stat-revenue-pending">
+                <span class="status-indicator-dot amber"></span> Pending: Rs. 0
+              </div>
+            </div>
+          </div>
+
+          <div class="stat-card total">
+            <div class="stat-card-header">
+              <span class="stat-pill-badge neutral"><i data-lucide="ticket"></i> ALL ORDERS</span>
+              <span class="stat-context-chip" id="stat-total-chip">0 Registered</span>
+            </div>
+            <div class="stat-value-wrap">
+              <div class="stat-number stat-white" id="stat-total">0</div>
+            </div>
+            <div class="stat-card-footer">
+              <div class="stat-footer-note">Total registered attendees</div>
+            </div>
+          </div>
+
+          <div class="stat-card pending">
+            <div class="stat-card-header">
+              <span class="stat-pill-badge amber"><i data-lucide="clock"></i> ACTION NEEDED</span>
+              <span class="stat-context-chip amber">Requires Review</span>
+            </div>
+            <div class="stat-value-wrap">
+              <div class="stat-number stat-amber" id="stat-pending">0</div>
+            </div>
+            <div class="stat-card-footer">
+              <div class="stat-footer-highlight amber">
+                <span class="status-indicator-dot amber"></span> Awaiting verification
+              </div>
+            </div>
+          </div>
+
+          <div class="stat-card approved">
+            <div class="stat-card-header">
+              <span class="stat-pill-badge green"><i data-lucide="shield-check"></i> CONFIRMED</span>
+              <span class="stat-context-chip green" id="stat-approved-rate">0% Approved</span>
+            </div>
+            <div class="stat-value-wrap">
+              <div class="stat-number stat-emerald" id="stat-approved">0</div>
+            </div>
+            <div class="stat-card-footer">
+              <div class="stat-footer-highlight green">
+                <span class="status-indicator-dot green"></span> QR passes issued
+              </div>
+            </div>
+          </div>
+
+          <div class="stat-card rejected">
+            <div class="stat-card-header">
+              <span class="stat-pill-badge red"><i data-lucide="x-circle"></i> DECLINED</span>
+              <span class="stat-context-chip red">Invalid Receipts</span>
+            </div>
+            <div class="stat-value-wrap">
+              <div class="stat-number stat-rose" id="stat-rejected">0</div>
+            </div>
+            <div class="stat-card-footer">
+              <div class="stat-footer-note">Payment rejected orders</div>
+            </div>
+          </div>
+
+          <div class="stat-card scanned">
+            <div class="stat-card-header">
+              <span class="stat-pill-badge blue"><i data-lucide="scan-line"></i> ADMITTED</span>
+              <span class="stat-context-chip blue" id="stat-scanned-rate">0% Admitted</span>
+            </div>
+            <div class="stat-value-wrap">
+              <div class="stat-number stat-sky" id="stat-scanned">0</div>
+            </div>
+            <div class="stat-card-footer">
+              <div class="stat-footer-note">Gate entry verified</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="table-control-bar">
+          <div class="control-left">
+            <div class="search-input-wrap">
+              <i data-lucide="search" class="search-icon"></i>
+              <input type="text" id="ticketSearchInput" placeholder="Search by name, phone, or ticket ID..." oninput="handleSearch(this.value)">
+              <button type="button" class="search-clear-btn" id="searchClearBtn" onclick="clearSearch()" style="display:none;" title="Clear Search">✕</button>
+            </div>
+            <div class="filter-tabs">
+              <button class="filter-tab active" onclick="filterTickets('all',this)"><i data-lucide="layers" style="width:13px;height:13px;"></i> All <span class="tab-counter" id="tab-count-all">0</span></button>
+              <button class="filter-tab" onclick="filterTickets('pending',this)"><i data-lucide="clock" style="width:13px;height:13px;"></i> Pending <span class="tab-counter counter-amber" id="tab-count-pending">0</span></button>
+              <button class="filter-tab" onclick="filterTickets('approved',this)"><i data-lucide="shield-check" style="width:13px;height:13px;"></i> Approved <span class="tab-counter counter-green" id="tab-count-approved">0</span></button>
+              <button class="filter-tab" onclick="filterTickets('rejected',this)"><i data-lucide="x-circle" style="width:13px;height:13px;"></i> Rejected <span class="tab-counter counter-red" id="tab-count-rejected">0</span></button>
+            </div>
+          </div>
+          <div class="control-right">
+            <div class="live-sync-pill">
+              <span class="pulsing-beacon"></span>
+              <span>Auto-sync 5s</span>
+            </div>
+            <button class="btn-refresh" onclick="loadTickets()"><i data-lucide="refresh-cw" style="width:13px;height:13px;"></i> Refresh</button>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th><i data-lucide="user"></i> Attendee</th>
+                <th class="hide-mobile"><i data-lucide="phone"></i> WhatsApp</th>
+                <th class="hide-mobile"><i data-lucide="graduation-cap"></i> Batch / Class</th>
+                <th><i data-lucide="hash"></i> Qty</th>
+                <th><i data-lucide="activity"></i> Status</th>
+                <th class="hide-mobile"><i data-lucide="calendar"></i> Registered</th>
+                <th style="text-align:right;"><i data-lucide="sliders"></i> Actions</th>
+              </tr>
+            </thead>
+            <tbody id="ticketsBody">
+              <tr>
+                <td colspan="7" class="empty-state">
+                  <div class="empty-state-card">
+                    <div class="empty-icon-wrap"><i data-lucide="loader" class="spin" style="width:28px;height:28px;"></i></div>
+                    <div class="empty-title">Loading Tickets...</div>
+                    <div class="empty-desc">Connecting to live database</div>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Receipt Modal -->
+  <div class="modal" id="receiptModal" onclick="if(event.target===this)this.classList.remove('active')">
+    <div class="modal-content">
+      <div class="modal-header"><h3 class="modal-title"><i data-lucide="clipboard"></i> Receipt & Details</h3><button class="modal-close" onclick="document.getElementById('receiptModal').classList.remove('active')">✕</button></div>
+      <div class="ticket-info-card" id="receiptTicketInfo"></div>
+      <p id="receiptTitle" style="font-size:.85rem;color:var(--gold);margin-bottom:10px"><i data-lucide="image"></i> Payment Receipt:</p>
+      <img id="receiptImage" src="" alt="Receipt" style="width:100%;max-height:400px;object-fit:contain;border-radius:8px;border:1px solid var(--input-border);display:none;">
+      <div id="receiptPdfContainer" style="display:none;padding:20px;text-align:center;background:var(--input-bg);border:1px solid var(--input-border);border-radius:8px;margin-bottom:10px;">
+        <span style="font-size:3rem;"><i data-lucide="file-text" style="width:3rem;height:3rem;"></i></span>
+        <p id="receiptPdfName" style="color:var(--gold);font-weight:600;margin:10px 0 15px;font-size:.9rem;word-break:break-all;"></p>
+        <a id="receiptPdfOpenLink" href="#" target="_blank" class="modal-btn modal-btn-gold" style="display:inline-block;text-decoration:none;"><i data-lucide="file-text"></i> Open / View PDF</a>
+      </div>
+      <p id="noReceiptMsg" style="display:none;text-align:center;color:var(--text-muted);padding:20px">No receipt uploaded</p>
+      <div class="modal-footer" id="receiptModalFooter">
+        <button class="modal-btn modal-btn-reject" onclick="document.getElementById('receiptModal').classList.remove('active');openReject(currentKey)"><i data-lucide="x"></i> Reject</button>
+        <button class="modal-btn modal-btn-approve" onclick="document.getElementById('receiptModal').classList.remove('active');approveTicket(currentKey)"><i data-lucide="check"></i> Approve</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Official Figure 1 Minimalist Ticket Pass Modal -->
+  <div class="modal" id="qrModal" onclick="if(event.target===this)this.classList.remove('active')">
+    <div class="modal-content modal-ticket-preview">
+      <div class="modal-header">
+        <h3 class="modal-title"><i data-lucide="ticket"></i> Official Ticket Pass Preview</h3>
+        <button class="modal-close" onclick="document.getElementById('qrModal').classList.remove('active')">✕</button>
+      </div>
+
+      <!-- Minimalist Figure 1 Ticket Card -->
+      <div class="modal-pass-card" id="modalTicketCard">
+        <p class="modal-college-header">ST. BENEDICT'S COLLEGE</p>
+        <div class="modal-title-stage">
+          <img src="redeus-title.png" alt="REDEUS'26" class="modal-brand-logo">
+        </div>
+        <p class="modal-event-tagline">"From the First Day to the Final Bow"</p>
+        <div class="modal-pass-divider">
+          <span>◆</span> OFFICIAL ENTRY PASS <span>◆</span>
+        </div>
+
+        <!-- Centered High-Res QR Frame -->
+        <div class="modal-qr-frame">
+          <img id="qrImage" src="" alt="Gate Pass QR Code">
+        </div>
+
+        <!-- Student Name -->
+        <h2 class="modal-student-name" id="modalStudentName">STUDENT NAME</h2>
+
+        <!-- Details Box with Ticket Number -->
+        <div class="modal-pass-details-box">
+          <div class="modal-detail-col">
+            <span class="modal-col-lbl">PASS ALLOCATION</span>
+            <span class="modal-col-val" id="modalPassAlloc">1 PERSON</span>
+          </div>
+          <div class="modal-detail-col">
+            <span class="modal-col-lbl">TICKET NUMBER</span>
+            <span class="modal-col-val modal-mono-code" id="modalTicketNum">RED-00000</span>
+          </div>
+        </div>
+
+        <p class="modal-pass-instruction">Show this pass on your phone screen at the entrance gate.</p>
+        <p class="modal-pass-batch">THE 2023 O/L AND 2026 A/L BATCH</p>
+      </div>
+
+      <!-- Modal Action Buttons -->
+      <div class="modal-footer" style="justify-content:center;gap:10px;flex-wrap:wrap;margin-top:18px;">
+        <button class="modal-btn modal-btn-whatsapp" onclick="sendWhatsApp()"><i data-lucide="send"></i> Send via WhatsApp</button>
+        <button class="modal-btn modal-btn-gold" onclick="copyPassPhoto(currentKey)"><i data-lucide="camera"></i> Copy Pass Photo</button>
+        <button class="modal-btn modal-btn-outline" onclick="copyPassLink(currentKey)"><i data-lucide="copy"></i> Copy Link</button>
+        <button class="modal-btn modal-btn-outline" onclick="downloadQR()"><i data-lucide="download"></i> Download Pass</button>
+        <a class="modal-btn modal-btn-outline" id="modalStudentViewBtn" href="#" target="_blank"><i data-lucide="external-link"></i> Student View</a>
+      </div>
+      <p style="font-size:.74rem;color:var(--text-muted);text-align:center;margin-top:10px;line-height:1.4;">💡 <strong>Send via WhatsApp</strong> opens chat with the clean caption and copies the pass photo. In WhatsApp Web, press <strong>Ctrl + V</strong> to attach photo & click Send!</p>
+    </div>
+  </div>
+
+  <!-- Reject Modal -->
+  <div class="modal" id="rejectModal" onclick="if(event.target===this)this.classList.remove('active')">
+    <div class="modal-content">
+      <div class="modal-header"><h3 class="modal-title"><i data-lucide="x-circle"></i> Reject Ticket</h3><button class="modal-close" onclick="document.getElementById('rejectModal').classList.remove('active')">✕</button></div>
+      <p style="margin-bottom:10px;font-size:.9rem">Reason (optional):</p>
+      <textarea class="reject-textarea" id="rejectReason" placeholder="e.g., Receipt unclear, wrong amount..."></textarea>
+      <div class="modal-footer">
+        <button class="modal-btn modal-btn-outline" onclick="document.getElementById('rejectModal').classList.remove('active')">Cancel</button>
+        <button class="modal-btn modal-btn-reject" onclick="confirmReject()">Reject</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Excel & Google Sheets Sync Modal -->
+  <div class="modal" id="excelSyncModal" onclick="if(event.target===this)this.classList.remove('active')">
+    <div class="modal-content" style="max-width:580px;">
+      <div class="modal-header">
+        <h3 class="modal-title"><i data-lucide="sheet"></i> Financial Ledger & Excel Sync</h3>
+        <button class="modal-close" onclick="document.getElementById('excelSyncModal').classList.remove('active')">✕</button>
+      </div>
+
+      <div style="padding:10px 0;">
+        <p style="font-size:0.86rem;color:var(--text);margin-bottom:14px;line-height:1.5;">
+          Keep complete financial tracking of all ticket sales (@ <strong>Rs. 8,000</strong> per ticket) for committee accounting and auditing.
+        </p>
+
+        <div style="background:rgba(212,175,55,0.08);border:1px solid rgba(212,175,55,0.35);border-radius:10px;padding:14px;margin-bottom:14px;">
+          <h4 style="font-family:'Cinzel',serif;font-size:0.92rem;color:var(--gold);margin-bottom:6px;display:flex;align-items:center;gap:6px;">
+            <i data-lucide="file-spreadsheet"></i> 1. Download Excel Spreadsheet (.CSV)
+          </h4>
+          <p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:10px;line-height:1.4;">
+            Instantly download an audit-ready Excel ledger with attendee details, payment status, revenue calculations, and summary totals.
+          </p>
+          <button class="btn btn-gold" onclick="exportToExcel()" style="padding:8px 16px;font-size:0.82rem;">
+            <i data-lucide="download"></i> Download Excel Report (.CSV)
+          </button>
+        </div>
+
+        <div style="background:rgba(46,204,113,0.08);border:1px solid rgba(46,204,113,0.35);border-radius:10px;padding:14px;">
+          <h4 style="font-family:'Cinzel',serif;font-size:0.92rem;color:#2ecc71;margin-bottom:6px;display:flex;align-items:center;gap:6px;">
+            <i data-lucide="refresh-cw"></i> 2. Live Cloud Google Sheets Sync
+          </h4>
+          <p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:8px;line-height:1.4;">
+            To keep an online Google Sheet automatically synced with the live database in real-time:
+          </p>
+          <ol style="font-size:0.78rem;color:var(--text);padding-left:18px;line-height:1.6;margin-bottom:12px;">
+            <li>Open a new spreadsheet at <a href="https://sheets.new" target="_blank" style="color:var(--gold);text-decoration:underline;">sheets.new</a></li>
+            <li>In the top menu, go to <strong>Extensions &gt; Apps Script</strong></li>
+            <li>Click the button below to copy the auto-sync script and paste it into Apps Script</li>
+            <li>Click <strong>Save &gt; Run</strong> (Optionally add a 5-minute timer trigger for automatic updates)</li>
+          </ol>
+          <button class="btn btn-green" onclick="copyGoogleAppsScript()" style="padding:8px 16px;font-size:0.82rem;">
+            <i data-lucide="copy"></i> Copy Google Sheets Sync Script
+          </button>
+        </div>
+      </div>
+
+      <div class="modal-footer" style="margin-top:14px;">
+        <button class="modal-btn modal-btn-outline" onclick="document.getElementById('excelSyncModal').classList.remove('active')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script>
+  // Embedded QR Code Generator
+  /**
+ * Minified by jsDelivr using Terser v5.37.0.
+ * Original file: /npm/qrcode-generator@1.4.4/qrcode.js
+ *
+ * Do NOT use SRI with dynamically generated files! More information: https://www.jsdelivr.com/using-sri-with-dynamic-files
+ */
+var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],f={},c=function(t,r){o=function(t){for(var r=new Array(t),e=0;e<t;e+=1){r[e]=new Array(t);for(var n=0;n<t;n+=1)r[e][n]=null}return r}(i=4*e+17),l(0,0),l(i-7,0),l(0,i-7),s(),h(),d(t,r),e>=7&&v(t),null==a&&(a=p(e,n,u)),w(a,r)},l=function(t,r){for(var e=-1;e<=7;e+=1)if(!(t+e<=-1||i<=t+e))for(var n=-1;n<=7;n+=1)r+n<=-1||i<=r+n||(o[t+e][r+n]=0<=e&&e<=6&&(0==n||6==n)||0<=n&&n<=6&&(0==e||6==e)||2<=e&&e<=4&&2<=n&&n<=4)},h=function(){for(var t=8;t<i-8;t+=1)null==o[t][6]&&(o[t][6]=t%2==0);for(var r=8;r<i-8;r+=1)null==o[6][r]&&(o[6][r]=r%2==0)},s=function(){for(var t=B.getPatternPosition(e),r=0;r<t.length;r+=1)for(var n=0;n<t.length;n+=1){var i=t[r],a=t[n];if(null==o[i][a])for(var u=-2;u<=2;u+=1)for(var f=-2;f<=2;f+=1)o[i+u][a+f]=-2==u||2==u||-2==f||2==f||0==u&&0==f}},v=function(t){for(var r=B.getBCHTypeNumber(e),n=0;n<18;n+=1){var a=!t&&1==(r>>n&1);o[Math.floor(n/3)][n%3+i-8-3]=a}for(n=0;n<18;n+=1){a=!t&&1==(r>>n&1);o[n%3+i-8-3][Math.floor(n/3)]=a}},d=function(t,r){for(var e=n<<3|r,a=B.getBCHTypeInfo(e),u=0;u<15;u+=1){var f=!t&&1==(a>>u&1);u<6?o[u][8]=f:u<8?o[u+1][8]=f:o[i-15+u][8]=f}for(u=0;u<15;u+=1){f=!t&&1==(a>>u&1);u<8?o[8][i-u-1]=f:u<9?o[8][15-u-1+1]=f:o[8][15-u-1]=f}o[i-8][8]=!t},w=function(t,r){for(var e=-1,n=i-1,a=7,u=0,f=B.getMaskFunction(r),c=i-1;c>0;c-=2)for(6==c&&(c-=1);;){for(var g=0;g<2;g+=1)if(null==o[n][c-g]){var l=!1;u<t.length&&(l=1==(t[u]>>>a&1)),f(n,c-g)&&(l=!l),o[n][c-g]=l,-1==(a-=1)&&(u+=1,a=7)}if((n+=e)<0||i<=n){n-=e,e=-e;break}}},p=function(t,r,e){for(var n=A.getRSBlocks(t,r),o=b(),i=0;i<e.length;i+=1){var a=e[i];o.put(a.getMode(),4),o.put(a.getLength(),B.getLengthInBits(a.getMode(),t)),a.write(o)}var u=0;for(i=0;i<n.length;i+=1)u+=n[i].dataCount;if(o.getLengthInBits()>8*u)throw"code length overflow. ("+o.getLengthInBits()+">"+8*u+")";for(o.getLengthInBits()+4<=8*u&&o.put(0,4);o.getLengthInBits()%8!=0;)o.putBit(!1);for(;!(o.getLengthInBits()>=8*u||(o.put(236,8),o.getLengthInBits()>=8*u));)o.put(17,8);return function(t,r){for(var e=0,n=0,o=0,i=new Array(r.length),a=new Array(r.length),u=0;u<r.length;u+=1){var f=r[u].dataCount,c=r[u].totalCount-f;n=Math.max(n,f),o=Math.max(o,c),i[u]=new Array(f);for(var g=0;g<i[u].length;g+=1)i[u][g]=255&t.getBuffer()[g+e];e+=f;var l=B.getErrorCorrectPolynomial(c),h=k(i[u],l.getLength()-1).mod(l);for(a[u]=new Array(l.getLength()-1),g=0;g<a[u].length;g+=1){var s=g+h.getLength()-a[u].length;a[u][g]=s>=0?h.getAt(s):0}}var v=0;for(g=0;g<r.length;g+=1)v+=r[g].totalCount;var d=new Array(v),w=0;for(g=0;g<n;g+=1)for(u=0;u<r.length;u+=1)g<i[u].length&&(d[w]=i[u][g],w+=1);for(g=0;g<o;g+=1)for(u=0;u<r.length;u+=1)g<a[u].length&&(d[w]=a[u][g],w+=1);return d}(o,n)};f.addData=function(t,r){var e=null;switch(r=r||"Byte"){case"Numeric":e=M(t);break;case"Alphanumeric":e=x(t);break;case"Byte":e=m(t);break;case"Kanji":e=L(t);break;default:throw"mode:"+r}u.push(e),a=null},f.isDark=function(t,r){if(t<0||i<=t||r<0||i<=r)throw t+","+r;return o[t][r]},f.getModuleCount=function(){return i},f.make=function(){if(e<1){for(var t=1;t<40;t++){for(var r=A.getRSBlocks(t,n),o=b(),i=0;i<u.length;i++){var a=u[i];o.put(a.getMode(),4),o.put(a.getLength(),B.getLengthInBits(a.getMode(),t)),a.write(o)}var g=0;for(i=0;i<r.length;i++)g+=r[i].dataCount;if(o.getLengthInBits()<=8*g)break}e=t}c(!1,function(){for(var t=0,r=0,e=0;e<8;e+=1){c(!0,e);var n=B.getLostPoint(f);(0==e||t>n)&&(t=n,r=e)}return r}())},f.createTableTag=function(t,r){t=t||2;var e="";e+='<table style="',e+=" border-width: 0px; border-style: none;",e+=" border-collapse: collapse;",e+=" padding: 0px; margin: "+(r=void 0===r?4*t:r)+"px;",e+='">',e+="<tbody>";for(var n=0;n<f.getModuleCount();n+=1){e+="<tr>";for(var o=0;o<f.getModuleCount();o+=1)e+='<td style="',e+=" border-width: 0px; border-style: none;",e+=" border-collapse: collapse;",e+=" padding: 0px; margin: 0px;",e+=" width: "+t+"px;",e+=" height: "+t+"px;",e+=" background-color: ",e+=f.isDark(n,o)?"#000000":"#ffffff",e+=";",e+='"/>';e+="</tr>"}return e+="</tbody>",e+="</table>"},f.createSvgTag=function(t,r,e,n){var o={};"object"==typeof arguments[0]&&(t=(o=arguments[0]).cellSize,r=o.margin,e=o.alt,n=o.title),t=t||2,r=void 0===r?4*t:r,(e="string"==typeof e?{text:e}:e||{}).text=e.text||null,e.id=e.text?e.id||"qrcode-description":null,(n="string"==typeof n?{text:n}:n||{}).text=n.text||null,n.id=n.text?n.id||"qrcode-title":null;var i,a,u,c,g=f.getModuleCount()*t+2*r,l="";for(c="l"+t+",0 0,"+t+" -"+t+",0 0,-"+t+"z ",l+='<svg version="1.1" xmlns="http://www.w3.org/2000/svg"',l+=o.scalable?"":' width="'+g+'px" height="'+g+'px"',l+=' viewBox="0 0 '+g+" "+g+'" ',l+=' preserveAspectRatio="xMinYMin meet"',l+=n.text||e.text?' role="img" aria-labelledby="'+y([n.id,e.id].join(" ").trim())+'"':"",l+=">",l+=n.text?'<title id="'+y(n.id)+'">'+y(n.text)+"</title>":"",l+=e.text?'<description id="'+y(e.id)+'">'+y(e.text)+"</description>":"",l+='<rect width="100%" height="100%" fill="white" cx="0" cy="0"/>',l+='<path d="',a=0;a<f.getModuleCount();a+=1)for(u=a*t+r,i=0;i<f.getModuleCount();i+=1)f.isDark(a,i)&&(l+="M"+(i*t+r)+","+u+c);return l+='" stroke="transparent" fill="black"/>',l+="</svg>"},f.createDataURL=function(t,r){t=t||2,r=void 0===r?4*t:r;var e=f.getModuleCount()*t+2*r,n=r,o=e-r;return I(e,e,(function(r,e){if(n<=r&&r<o&&n<=e&&e<o){var i=Math.floor((r-n)/t),a=Math.floor((e-n)/t);return f.isDark(a,i)?0:1}return 1}))},f.createImgTag=function(t,r,e){t=t||2,r=void 0===r?4*t:r;var n=f.getModuleCount()*t+2*r,o="";return o+="<img",o+=' src="',o+=f.createDataURL(t,r),o+='"',o+=' width="',o+=n,o+='"',o+=' height="',o+=n,o+='"',e&&(o+=' alt="',o+=y(e),o+='"'),o+="/>"};var y=function(t){for(var r="",e=0;e<t.length;e+=1){var n=t.charAt(e);switch(n){case"<":r+="&lt;";break;case">":r+="&gt;";break;case"&":r+="&amp;";break;case'"':r+="&quot;";break;default:r+=n}}return r};return f.createASCII=function(t,r){if((t=t||1)<2)return function(t){t=void 0===t?2:t;var r,e,n,o,i,a=1*f.getModuleCount()+2*t,u=t,c=a-t,g={"██":"█","█ ":"▀"," █":"▄","  ":" "},l={"██":"▀","█ ":"▀"," █":" ","  ":" "},h="";for(r=0;r<a;r+=2){for(n=Math.floor((r-u)/1),o=Math.floor((r+1-u)/1),e=0;e<a;e+=1)i="█",u<=e&&e<c&&u<=r&&r<c&&f.isDark(n,Math.floor((e-u)/1))&&(i=" "),u<=e&&e<c&&u<=r+1&&r+1<c&&f.isDark(o,Math.floor((e-u)/1))?i+=" ":i+="█",h+=t<1&&r+1>=c?l[i]:g[i];h+="\n"}return a%2&&t>0?h.substring(0,h.length-a-1)+Array(a+1).join("▀"):h.substring(0,h.length-1)}(r);t-=1,r=void 0===r?2*t:r;var e,n,o,i,a=f.getModuleCount()*t+2*r,u=r,c=a-r,g=Array(t+1).join("██"),l=Array(t+1).join("  "),h="",s="";for(e=0;e<a;e+=1){for(o=Math.floor((e-u)/t),s="",n=0;n<a;n+=1)i=1,u<=n&&n<c&&u<=e&&e<c&&f.isDark(o,Math.floor((n-u)/t))&&(i=0),s+=i?g:l;for(o=0;o<t;o+=1)h+=s+"\n"}return h.substring(0,h.length-1)},f.renderTo2dContext=function(t,r){r=r||2;for(var e=f.getModuleCount(),n=0;n<e;n++)for(var o=0;o<e;o++)t.fillStyle=f.isDark(n,o)?"black":"white",t.fillRect(n*r,o*r,r,r)},f};t.stringToBytes=(t.stringToBytesFuncs={default:function(t){for(var r=[],e=0;e<t.length;e+=1){var n=t.charCodeAt(e);r.push(255&n)}return r}}).default,t.createStringToBytes=function(t,r){var e=function(){for(var e=S(t),n=function(){var t=e.read();if(-1==t)throw"eof";return t},o=0,i={};;){var a=e.read();if(-1==a)break;var u=n(),f=n()<<8|n();i[String.fromCharCode(a<<8|u)]=f,o+=1}if(o!=r)throw o+" != "+r;return i}(),n="?".charCodeAt(0);return function(t){for(var r=[],o=0;o<t.length;o+=1){var i=t.charCodeAt(o);if(i<128)r.push(i);else{var a=e[t.charAt(o)];"number"==typeof a?(255&a)==a?r.push(a):(r.push(a>>>8),r.push(255&a)):r.push(n)}}return r}};var r,e,n,o,i,a=1,u=2,f=4,c=8,g={L:1,M:0,Q:3,H:2},l=0,h=1,s=2,v=3,d=4,w=5,p=6,y=7,B=(r=[[],[6,18],[6,22],[6,26],[6,30],[6,34],[6,22,38],[6,24,42],[6,26,46],[6,28,50],[6,30,54],[6,32,58],[6,34,62],[6,26,46,66],[6,26,48,70],[6,26,50,74],[6,30,54,78],[6,30,56,82],[6,30,58,86],[6,34,62,90],[6,28,50,72,94],[6,26,50,74,98],[6,30,54,78,102],[6,28,54,80,106],[6,32,58,84,110],[6,30,58,86,114],[6,34,62,90,118],[6,26,50,74,98,122],[6,30,54,78,102,126],[6,26,52,78,104,130],[6,30,56,82,108,134],[6,34,60,86,112,138],[6,30,58,86,114,142],[6,34,62,90,118,146],[6,30,54,78,102,126,150],[6,24,50,76,102,128,154],[6,28,54,80,106,132,158],[6,32,58,84,110,136,162],[6,26,54,82,110,138,166],[6,30,58,86,114,142,170]],e=1335,n=7973,i=function(t){for(var r=0;0!=t;)r+=1,t>>>=1;return r},(o={}).getBCHTypeInfo=function(t){for(var r=t<<10;i(r)-i(e)>=0;)r^=e<<i(r)-i(e);return 21522^(t<<10|r)},o.getBCHTypeNumber=function(t){for(var r=t<<12;i(r)-i(n)>=0;)r^=n<<i(r)-i(n);return t<<12|r},o.getPatternPosition=function(t){return r[t-1]},o.getMaskFunction=function(t){switch(t){case l:return function(t,r){return(t+r)%2==0};case h:return function(t,r){return t%2==0};case s:return function(t,r){return r%3==0};case v:return function(t,r){return(t+r)%3==0};case d:return function(t,r){return(Math.floor(t/2)+Math.floor(r/3))%2==0};case w:return function(t,r){return t*r%2+t*r%3==0};case p:return function(t,r){return(t*r%2+t*r%3)%2==0};case y:return function(t,r){return(t*r%3+(t+r)%2)%2==0};default:throw"bad maskPattern:"+t}},o.getErrorCorrectPolynomial=function(t){for(var r=k([1],0),e=0;e<t;e+=1)r=r.multiply(k([1,C.gexp(e)],0));return r},o.getLengthInBits=function(t,r){if(1<=r&&r<10)switch(t){case a:return 10;case u:return 9;case f:case c:return 8;default:throw"mode:"+t}else if(r<27)switch(t){case a:return 12;case u:return 11;case f:return 16;case c:return 10;default:throw"mode:"+t}else{if(!(r<41))throw"type:"+r;switch(t){case a:return 14;case u:return 13;case f:return 16;case c:return 12;default:throw"mode:"+t}}},o.getLostPoint=function(t){for(var r=t.getModuleCount(),e=0,n=0;n<r;n+=1)for(var o=0;o<r;o+=1){for(var i=0,a=t.isDark(n,o),u=-1;u<=1;u+=1)if(!(n+u<0||r<=n+u))for(var f=-1;f<=1;f+=1)o+f<0||r<=o+f||0==u&&0==f||a==t.isDark(n+u,o+f)&&(i+=1);i>5&&(e+=3+i-5)}for(n=0;n<r-1;n+=1)for(o=0;o<r-1;o+=1){var c=0;t.isDark(n,o)&&(c+=1),t.isDark(n+1,o)&&(c+=1),t.isDark(n,o+1)&&(c+=1),t.isDark(n+1,o+1)&&(c+=1),0!=c&&4!=c||(e+=3)}for(n=0;n<r;n+=1)for(o=0;o<r-6;o+=1)t.isDark(n,o)&&!t.isDark(n,o+1)&&t.isDark(n,o+2)&&t.isDark(n,o+3)&&t.isDark(n,o+4)&&!t.isDark(n,o+5)&&t.isDark(n,o+6)&&(e+=40);for(o=0;o<r;o+=1)for(n=0;n<r-6;n+=1)t.isDark(n,o)&&!t.isDark(n+1,o)&&t.isDark(n+2,o)&&t.isDark(n+3,o)&&t.isDark(n+4,o)&&!t.isDark(n+5,o)&&t.isDark(n+6,o)&&(e+=40);var g=0;for(o=0;o<r;o+=1)for(n=0;n<r;n+=1)t.isDark(n,o)&&(g+=1);return e+=Math.abs(100*g/r/r-50)/5*10},o),C=function(){for(var t=new Array(256),r=new Array(256),e=0;e<8;e+=1)t[e]=1<<e;for(e=8;e<256;e+=1)t[e]=t[e-4]^t[e-5]^t[e-6]^t[e-8];for(e=0;e<255;e+=1)r[t[e]]=e;var n={glog:function(t){if(t<1)throw"glog("+t+")";return r[t]},gexp:function(r){for(;r<0;)r+=255;for(;r>=256;)r-=255;return t[r]}};return n}();function k(t,r){if(void 0===t.length)throw t.length+"/"+r;var e=function(){for(var e=0;e<t.length&&0==t[e];)e+=1;for(var n=new Array(t.length-e+r),o=0;o<t.length-e;o+=1)n[o]=t[o+e];return n}(),n={getAt:function(t){return e[t]},getLength:function(){return e.length},multiply:function(t){for(var r=new Array(n.getLength()+t.getLength()-1),e=0;e<n.getLength();e+=1)for(var o=0;o<t.getLength();o+=1)r[e+o]^=C.gexp(C.glog(n.getAt(e))+C.glog(t.getAt(o)));return k(r,0)},mod:function(t){if(n.getLength()-t.getLength()<0)return n;for(var r=C.glog(n.getAt(0))-C.glog(t.getAt(0)),e=new Array(n.getLength()),o=0;o<n.getLength();o+=1)e[o]=n.getAt(o);for(o=0;o<t.getLength();o+=1)e[o]^=C.gexp(C.glog(t.getAt(o))+r);return k(e,0).mod(t)}};return n}var A=function(){var t=[[1,26,19],[1,26,16],[1,26,13],[1,26,9],[1,44,34],[1,44,28],[1,44,22],[1,44,16],[1,70,55],[1,70,44],[2,35,17],[2,35,13],[1,100,80],[2,50,32],[2,50,24],[4,25,9],[1,134,108],[2,67,43],[2,33,15,2,34,16],[2,33,11,2,34,12],[2,86,68],[4,43,27],[4,43,19],[4,43,15],[2,98,78],[4,49,31],[2,32,14,4,33,15],[4,39,13,1,40,14],[2,121,97],[2,60,38,2,61,39],[4,40,18,2,41,19],[4,40,14,2,41,15],[2,146,116],[3,58,36,2,59,37],[4,36,16,4,37,17],[4,36,12,4,37,13],[2,86,68,2,87,69],[4,69,43,1,70,44],[6,43,19,2,44,20],[6,43,15,2,44,16],[4,101,81],[1,80,50,4,81,51],[4,50,22,4,51,23],[3,36,12,8,37,13],[2,116,92,2,117,93],[6,58,36,2,59,37],[4,46,20,6,47,21],[7,42,14,4,43,15],[4,133,107],[8,59,37,1,60,38],[8,44,20,4,45,21],[12,33,11,4,34,12],[3,145,115,1,146,116],[4,64,40,5,65,41],[11,36,16,5,37,17],[11,36,12,5,37,13],[5,109,87,1,110,88],[5,65,41,5,66,42],[5,54,24,7,55,25],[11,36,12,7,37,13],[5,122,98,1,123,99],[7,73,45,3,74,46],[15,43,19,2,44,20],[3,45,15,13,46,16],[1,135,107,5,136,108],[10,74,46,1,75,47],[1,50,22,15,51,23],[2,42,14,17,43,15],[5,150,120,1,151,121],[9,69,43,4,70,44],[17,50,22,1,51,23],[2,42,14,19,43,15],[3,141,113,4,142,114],[3,70,44,11,71,45],[17,47,21,4,48,22],[9,39,13,16,40,14],[3,135,107,5,136,108],[3,67,41,13,68,42],[15,54,24,5,55,25],[15,43,15,10,44,16],[4,144,116,4,145,117],[17,68,42],[17,50,22,6,51,23],[19,46,16,6,47,17],[2,139,111,7,140,112],[17,74,46],[7,54,24,16,55,25],[34,37,13],[4,151,121,5,152,122],[4,75,47,14,76,48],[11,54,24,14,55,25],[16,45,15,14,46,16],[6,147,117,4,148,118],[6,73,45,14,74,46],[11,54,24,16,55,25],[30,46,16,2,47,17],[8,132,106,4,133,107],[8,75,47,13,76,48],[7,54,24,22,55,25],[22,45,15,13,46,16],[10,142,114,2,143,115],[19,74,46,4,75,47],[28,50,22,6,51,23],[33,46,16,4,47,17],[8,152,122,4,153,123],[22,73,45,3,74,46],[8,53,23,26,54,24],[12,45,15,28,46,16],[3,147,117,10,148,118],[3,73,45,23,74,46],[4,54,24,31,55,25],[11,45,15,31,46,16],[7,146,116,7,147,117],[21,73,45,7,74,46],[1,53,23,37,54,24],[19,45,15,26,46,16],[5,145,115,10,146,116],[19,75,47,10,76,48],[15,54,24,25,55,25],[23,45,15,25,46,16],[13,145,115,3,146,116],[2,74,46,29,75,47],[42,54,24,1,55,25],[23,45,15,28,46,16],[17,145,115],[10,74,46,23,75,47],[10,54,24,35,55,25],[19,45,15,35,46,16],[17,145,115,1,146,116],[14,74,46,21,75,47],[29,54,24,19,55,25],[11,45,15,46,46,16],[13,145,115,6,146,116],[14,74,46,23,75,47],[44,54,24,7,55,25],[59,46,16,1,47,17],[12,151,121,7,152,122],[12,75,47,26,76,48],[39,54,24,14,55,25],[22,45,15,41,46,16],[6,151,121,14,152,122],[6,75,47,34,76,48],[46,54,24,10,55,25],[2,45,15,64,46,16],[17,152,122,4,153,123],[29,74,46,14,75,47],[49,54,24,10,55,25],[24,45,15,46,46,16],[4,152,122,18,153,123],[13,74,46,32,75,47],[48,54,24,14,55,25],[42,45,15,32,46,16],[20,147,117,4,148,118],[40,75,47,7,76,48],[43,54,24,22,55,25],[10,45,15,67,46,16],[19,148,118,6,149,119],[18,75,47,31,76,48],[34,54,24,34,55,25],[20,45,15,61,46,16]],r=function(t,r){var e={};return e.totalCount=t,e.dataCount=r,e},e={};return e.getRSBlocks=function(e,n){var o=function(r,e){switch(e){case g.L:return t[4*(r-1)+0];case g.M:return t[4*(r-1)+1];case g.Q:return t[4*(r-1)+2];case g.H:return t[4*(r-1)+3];default:return}}(e,n);if(void 0===o)throw"bad rs block @ typeNumber:"+e+"/errorCorrectionLevel:"+n;for(var i=o.length/3,a=[],u=0;u<i;u+=1)for(var f=o[3*u+0],c=o[3*u+1],l=o[3*u+2],h=0;h<f;h+=1)a.push(r(c,l));return a},e}(),b=function(){var t=[],r=0,e={getBuffer:function(){return t},getAt:function(r){var e=Math.floor(r/8);return 1==(t[e]>>>7-r%8&1)},put:function(t,r){for(var n=0;n<r;n+=1)e.putBit(1==(t>>>r-n-1&1))},getLengthInBits:function(){return r},putBit:function(e){var n=Math.floor(r/8);t.length<=n&&t.push(0),e&&(t[n]|=128>>>r%8),r+=1}};return e},M=function(t){var r=a,e=t,n={getMode:function(){return r},getLength:function(t){return e.length},write:function(t){for(var r=e,n=0;n+2<r.length;)t.put(o(r.substring(n,n+3)),10),n+=3;n<r.length&&(r.length-n==1?t.put(o(r.substring(n,n+1)),4):r.length-n==2&&t.put(o(r.substring(n,n+2)),7))}},o=function(t){for(var r=0,e=0;e<t.length;e+=1)r=10*r+i(t.charAt(e));return r},i=function(t){if("0"<=t&&t<="9")return t.charCodeAt(0)-"0".charCodeAt(0);throw"illegal char :"+t};return n},x=function(t){var r=u,e=t,n={getMode:function(){return r},getLength:function(t){return e.length},write:function(t){for(var r=e,n=0;n+1<r.length;)t.put(45*o(r.charAt(n))+o(r.charAt(n+1)),11),n+=2;n<r.length&&t.put(o(r.charAt(n)),6)}},o=function(t){if("0"<=t&&t<="9")return t.charCodeAt(0)-"0".charCodeAt(0);if("A"<=t&&t<="Z")return t.charCodeAt(0)-"A".charCodeAt(0)+10;switch(t){case" ":return 36;case"$":return 37;case"%":return 38;case"*":return 39;case"+":return 40;case"-":return 41;case".":return 42;case"/":return 43;case":":return 44;default:throw"illegal char :"+t}};return n},m=function(r){var e=f,n=t.stringToBytes(r),o={getMode:function(){return e},getLength:function(t){return n.length},write:function(t){for(var r=0;r<n.length;r+=1)t.put(n[r],8)}};return o},L=function(r){var e=c,n=t.stringToBytesFuncs.SJIS;if(!n)throw"sjis not supported.";!function(){var t=n("友");if(2!=t.length||38726!=(t[0]<<8|t[1]))throw"sjis not supported."}();var o=n(r),i={getMode:function(){return e},getLength:function(t){return~~(o.length/2)},write:function(t){for(var r=o,e=0;e+1<r.length;){var n=(255&r[e])<<8|255&r[e+1];if(33088<=n&&n<=40956)n-=33088;else{if(!(57408<=n&&n<=60351))throw"illegal char at "+(e+1)+"/"+n;n-=49472}n=192*(n>>>8&255)+(255&n),t.put(n,13),e+=2}if(e<r.length)throw"illegal char at "+(e+1)}};return i},D=function(){var t=[],r={writeByte:function(r){t.push(255&r)},writeShort:function(t){r.writeByte(t),r.writeByte(t>>>8)},writeBytes:function(t,e,n){e=e||0,n=n||t.length;for(var o=0;o<n;o+=1)r.writeByte(t[o+e])},writeString:function(t){for(var e=0;e<t.length;e+=1)r.writeByte(t.charCodeAt(e))},toByteArray:function(){return t},toString:function(){var r="";r+="[";for(var e=0;e<t.length;e+=1)e>0&&(r+=","),r+=t[e];return r+="]"}};return r},S=function(t){var r=t,e=0,n=0,o=0,i={read:function(){for(;o<8;){if(e>=r.length){if(0==o)return-1;throw"unexpected end of file./"+o}var t=r.charAt(e);if(e+=1,"="==t)return o=0,-1;t.match(/^\s$/)||(n=n<<6|a(t.charCodeAt(0)),o+=6)}var i=n>>>o-8&255;return o-=8,i}},a=function(t){if(65<=t&&t<=90)return t-65;if(97<=t&&t<=122)return t-97+26;if(48<=t&&t<=57)return t-48+52;if(43==t)return 62;if(47==t)return 63;throw"c:"+t};return i},I=function(t,r,e){for(var n=function(t,r){var e=t,n=r,o=new Array(t*r),i={setPixel:function(t,r,n){o[r*e+t]=n},write:function(t){t.writeString("GIF87a"),t.writeShort(e),t.writeShort(n),t.writeByte(128),t.writeByte(0),t.writeByte(0),t.writeByte(0),t.writeByte(0),t.writeByte(0),t.writeByte(255),t.writeByte(255),t.writeByte(255),t.writeString(","),t.writeShort(0),t.writeShort(0),t.writeShort(e),t.writeShort(n),t.writeByte(0);var r=a(2);t.writeByte(2);for(var o=0;r.length-o>255;)t.writeByte(255),t.writeBytes(r,o,255),o+=255;t.writeByte(r.length-o),t.writeBytes(r,o,r.length-o),t.writeByte(0),t.writeString(";")}},a=function(t){for(var r=1<<t,e=1+(1<<t),n=t+1,i=u(),a=0;a<r;a+=1)i.add(String.fromCharCode(a));i.add(String.fromCharCode(r)),i.add(String.fromCharCode(e));var f,c,g,l=D(),h=(f=l,c=0,g=0,{write:function(t,r){if(t>>>r!=0)throw"length over";for(;c+r>=8;)f.writeByte(255&(t<<c|g)),r-=8-c,t>>>=8-c,g=0,c=0;g|=t<<c,c+=r},flush:function(){c>0&&f.writeByte(g)}});h.write(r,n);var s=0,v=String.fromCharCode(o[s]);for(s+=1;s<o.length;){var d=String.fromCharCode(o[s]);s+=1,i.contains(v+d)?v+=d:(h.write(i.indexOf(v),n),i.size()<4095&&(i.size()==1<<n&&(n+=1),i.add(v+d)),v=d)}return h.write(i.indexOf(v),n),h.write(e,n),h.flush(),l.toByteArray()},u=function(){var t={},r=0,e={add:function(n){if(e.contains(n))throw"dup key:"+n;t[n]=r,r+=1},size:function(){return r},indexOf:function(r){return t[r]},contains:function(r){return void 0!==t[r]}};return e};return i}(t,r),o=0;o<r;o+=1)for(var i=0;i<t;i+=1)n.setPixel(i,o,e(i,o));var a=D();n.write(a);for(var u=function(){var t=0,r=0,e=0,n="",o={},i=function(t){n+=String.fromCharCode(a(63&t))},a=function(t){if(t<0);else{if(t<26)return 65+t;if(t<52)return t-26+97;if(t<62)return t-52+48;if(62==t)return 43;if(63==t)return 47}throw"n:"+t};return o.writeByte=function(n){for(t=t<<8|255&n,r+=8,e+=1;r>=6;)i(t>>>r-6),r-=6},o.flush=function(){if(r>0&&(i(t<<6-r),t=0,r=0),e%3!=0)for(var o=3-e%3,a=0;a<o;a+=1)n+="="},o.toString=function(){return n},o}(),f=a.toByteArray(),c=0;c<f.length;c+=1)u.writeByte(f[c]);return u.flush(),"data:image/gif;base64,"+u};return t}();qrcode.stringToBytesFuncs["UTF-8"]=function(t){return function(t){for(var r=[],e=0;e<t.length;e++){var n=t.charCodeAt(e);n<128?r.push(n):n<2048?r.push(192|n>>6,128|63&n):n<55296||n>=57344?r.push(224|n>>12,128|n>>6&63,128|63&n):(e++,n=65536+((1023&n)<<10|1023&t.charCodeAt(e)),r.push(240|n>>18,128|n>>12&63,128|n>>6&63,128|63&n))}return r}(t)},function(t){"function"==typeof define&&define.amd?define([],t):"object"==typeof exports&&(module.exports=t())}((function(){return qrcode}));
+//# sourceMappingURL=/sm/26b4b0d0b1e283d6b3ec9857ac597d7a60c76ac17be1ef4c965f03086de426bb.map
+
+    // =============================================
+    // Firebase REST API — NO SDK
+    // =============================================
+    var DB_URL = 'https://batch-party-69ac1-default-rtdb.firebaseio.com';
+    var QR_SECRET = 'REDEUS26-QR-SECRET-2026';
+    // Optional: Set to your public User GitHub Pages URL (e.g. 'https://username.github.io/user-repo/')
+    // If left empty, it automatically detects ticket.html in the current location.
+    var USER_PORTAL_URL = '';
+    var allTickets = {};
+    var normalizedTicketsMap = {};
+    var currentKey = null;
+    var currentFilter = 'all';
+    var prevCount = 0;
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    // Flattens/normalizes tickets so multi-ticket orders appear as distinct consecutive entries
+    function getNormalizedTickets(rawTickets) {
+      var list = [];
+      Object.entries(rawTickets || {}).forEach(function(entry) {
+        var key = entry[0], t = entry[1];
+        if (!t) return;
+
+        // If legacy record has attendees array with > 1 attendee
+        if (t.attendees && Array.isArray(t.attendees) && t.attendees.length > 1) {
+          t.attendees.forEach(function(att, idx) {
+            var subKey = key + '-' + (idx + 1);
+            list.push({
+              key: subKey,
+              parentKey: key,
+              isLegacySplit: true,
+              refId: (t.refId ? t.refId + '-' + (idx + 1) : subKey),
+              groupRef: t.refId || key,
+              groupIndex: idx + 1,
+              groupTotal: t.attendees.length,
+              paidTogether: true,
+              fullName: att.name || t.fullName || 'Guest',
+              whatsappNumber: att.whatsappNumber || t.whatsappNumber || '',
+              email: att.email || t.email || '',
+              idNumber: att.idNumber || '',
+              batchClass: att.classInfo || t.batchClass || '',
+              numTickets: 1,
+              status: t.status || 'pending',
+              scanned: t.scanned || false,
+              createdAt: t.createdAt,
+              receiptImage: t.receiptImage,
+              receiptType: t.receiptType,
+              receiptFileName: t.receiptFileName,
+              qrCodeImage: t.qrCodeImage,
+              qrCodeData: t.qrCodeData,
+              adminNotes: t.adminNotes
+            });
+          });
+        } else {
+          var groupRef = t.groupRef || t.refId || key;
+          var groupIndex = t.groupIndex || 1;
+          var groupTotal = t.groupTotal || (t.numTickets > 1 ? t.numTickets : 1);
+          var paidTogether = (t.paidTogether === true) || (groupTotal > 1);
+
+          list.push({
+            key: key,
+            refId: t.refId || key,
+            groupRef: groupRef,
+            groupIndex: groupIndex,
+            groupTotal: groupTotal,
+            paidTogether: paidTogether,
+            fullName: t.fullName || 'Guest',
+            whatsappNumber: t.whatsappNumber || '',
+            email: t.email || '',
+            idNumber: t.idNumber || (t.attendees && t.attendees[0] ? t.attendees[0].idNumber : ''),
+            batchClass: t.batchClass || (t.attendees && t.attendees[0] ? t.attendees[0].classInfo : ''),
+            numTickets: t.numTickets || 1,
+            status: t.status || 'pending',
+            scanned: t.scanned || false,
+            createdAt: t.createdAt,
+            receiptImage: t.receiptImage,
+            receiptType: t.receiptType,
+            receiptFileName: t.receiptFileName,
+            qrCodeImage: t.qrCodeImage,
+            qrCodeData: t.qrCodeData,
+            adminNotes: t.adminNotes
+          });
+        }
+      });
+
+      // Second pass: if multiple records share groupRef, link them
+      var groupCounts = {};
+      list.forEach(function(item) {
+        if (item.groupRef) {
+          groupCounts[item.groupRef] = (groupCounts[item.groupRef] || 0) + 1;
+        }
+      });
+      list.forEach(function(item) {
+        if (item.groupRef && groupCounts[item.groupRef] > 1) {
+          item.paidTogether = true;
+          item.groupTotal = Math.max(item.groupTotal || 0, groupCounts[item.groupRef]);
+        }
+      });
+
+      return list;
+    }
+
+    // =============================================
+    // LOAD TICKETS (polling via REST API)
+    // =============================================
+    function loadTickets() {
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', DB_URL + '/tickets.json', true);
+      xhr.onload = function() {
+        if (xhr.status === 200) {
+          var data = JSON.parse(xhr.responseText);
+          allTickets = data || {};
+          normalizedTicketsMap = {};
+
+          var flatList = getNormalizedTickets(allTickets);
+          flatList.forEach(function(item) {
+            normalizedTicketsMap[item.key] = item;
+          });
+
+          var count = flatList.length;
+
+          // Notify on new tickets
+          if (prevCount > 0 && count > prevCount) {
+            playSound();
+            showToast('New booking received!', 'success');
+            shakeBell();
+          }
+          prevCount = count;
+
+          updateStats();
+          renderTable();
+          if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+      };
+      xhr.send();
+    }
+
+    // =============================================
+    // ADMIN AUTHENTICATION & SESSION
+    // =============================================
+    var ADMIN_DEFAULT_PASSWORD = 'redeus2026';
+    var refreshIntervalId = null;
+
+    function checkAdminAuth() {
+      var isAuth = sessionStorage.getItem('redeus_admin_auth') === 'true';
+      var lockEl = document.getElementById('authLockOverlay');
+      if (isAuth) {
+        if (lockEl) lockEl.style.display = 'none';
+        startAdminSession();
+      } else {
+        if (lockEl) {
+          lockEl.style.display = 'flex';
+          lockEl.classList.remove('unlocked');
+          var input = document.getElementById('adminPasswordInput');
+          if (input) {
+            input.value = '';
+            setTimeout(function() { input.focus(); }, 150);
+          }
+        }
+      }
+    }
+
+    function handleAdminLogin(e) {
+      if (e && e.preventDefault) e.preventDefault();
+      var input = document.getElementById('adminPasswordInput');
+      var errEl = document.getElementById('authErrorMsg');
+      var card = document.getElementById('lockCard');
+      var entered = (input.value || '').trim();
+
+      var customPw = localStorage.getItem('redeus_custom_admin_pw');
+      var isCorrect = (entered.toLowerCase() === ADMIN_DEFAULT_PASSWORD.toLowerCase()) ||
+                      (customPw && entered === customPw);
+
+      if (isCorrect) {
+        sessionStorage.setItem('redeus_admin_auth', 'true');
+        if (errEl) errEl.style.display = 'none';
+        var lockEl = document.getElementById('authLockOverlay');
+        if (lockEl) {
+          lockEl.classList.add('unlocked');
+          setTimeout(function() {
+            lockEl.style.display = 'none';
+          }, 350);
+        }
+        showToast('Access granted. Welcome to Executive Panel!', 'success');
+        startAdminSession();
+      } else {
+        if (errEl) {
+          errEl.innerHTML = '<i data-lucide="alert-circle" style="width:14px;height:14px;"></i> Incorrect password. Access denied.';
+          errEl.style.display = 'flex';
+          if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+        if (card) {
+          card.classList.remove('shake');
+          void card.offsetWidth;
+          card.classList.add('shake');
+        }
+        input.select();
+      }
+    }
+
+    function togglePasswordVisibility() {
+      var input = document.getElementById('adminPasswordInput');
+      var icon = document.getElementById('eyeIcon');
+      if (!input) return;
+      if (input.type === 'password') {
+        input.type = 'text';
+        if (icon) icon.setAttribute('data-lucide', 'eye-off');
+      } else {
+        input.type = 'password';
+        if (icon) icon.setAttribute('data-lucide', 'eye');
+      }
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+
+    function logoutAdmin() {
+      sessionStorage.removeItem('redeus_admin_auth');
+      if (refreshIntervalId) {
+        clearInterval(refreshIntervalId);
+        refreshIntervalId = null;
+      }
+      var lockEl = document.getElementById('authLockOverlay');
+      if (lockEl) {
+        lockEl.classList.remove('unlocked');
+        lockEl.style.display = 'flex';
+        var input = document.getElementById('adminPasswordInput');
+        if (input) {
+          input.value = '';
+          input.focus();
+        }
+        var errEl = document.getElementById('authErrorMsg');
+        if (errEl) errEl.style.display = 'none';
+      }
+      showToast('Dashboard locked.', 'error');
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+
+    function startAdminSession() {
+      loadTickets();
+      if (!refreshIntervalId) {
+        refreshIntervalId = setInterval(loadTickets, 5000);
+      }
+      setTimeout(function(){ if(typeof lucide !== 'undefined') lucide.createIcons(); }, 120);
+    }
+
+    // Verify authentication on boot
+    checkAdminAuth();
+
+    // =============================================
+    // SEARCH & UTILITY CONTROLS
+    // =============================================
+    function handleSearch(val) {
+      var clearBtn = document.getElementById('searchClearBtn');
+      if (clearBtn) clearBtn.style.display = val ? 'flex' : 'none';
+      renderTable();
+    }
+
+    function clearSearch() {
+      var input = document.getElementById('ticketSearchInput');
+      if (input) input.value = '';
+      var clearBtn = document.getElementById('searchClearBtn');
+      if (clearBtn) clearBtn.style.display = 'none';
+      renderTable();
+    }
+
+    function copyText(text, msg) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function() {
+          showToast(msg || 'Copied to clipboard!', 'success');
+        }).catch(function() {
+          fallbackCopy(text, msg);
+        });
+      } else {
+        fallbackCopy(text, msg);
+      }
+    }
+
+    function fallbackCopy(text, msg) {
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        document.execCommand('copy');
+        showToast(msg || 'Copied to clipboard!', 'success');
+      } catch(e) {
+        showToast('Failed to copy', 'error');
+      }
+      document.body.removeChild(ta);
+    }
+
+    // =============================================
+    // STATS
+    // =============================================
+    function updateStats() {
+      var tickets = Object.values(normalizedTicketsMap);
+      var total = tickets.length;
+      var pending = tickets.filter(function(t){return t.status==='pending'}).length;
+      var approved = tickets.filter(function(t){return t.status==='approved'}).length;
+      var rejected = tickets.filter(function(t){return t.status==='rejected'}).length;
+      var scanned = tickets.filter(function(t){return t.scanned===true}).length;
+
+      document.getElementById('stat-total').textContent = total;
+      document.getElementById('stat-pending').textContent = pending;
+      document.getElementById('stat-approved').textContent = approved;
+      document.getElementById('stat-rejected').textContent = rejected;
+      document.getElementById('stat-scanned').textContent = scanned;
+
+      // Financial Calculation (@ Rs. 8,000 per ticket)
+      var pricePerTicket = 8000;
+      var totalRevenue = approved * pricePerTicket;
+      var pendingRevenue = pending * pricePerTicket;
+
+      var revEl = document.getElementById('stat-revenue');
+      if (revEl) revEl.textContent = 'Rs. ' + totalRevenue.toLocaleString();
+      var penRevEl = document.getElementById('stat-revenue-pending');
+      if (penRevEl) penRevEl.innerHTML = '<span class="status-indicator-dot amber"></span> Pending: Rs. ' + pendingRevenue.toLocaleString();
+
+      // Dynamic Context Badges
+      var totChip = document.getElementById('stat-total-chip');
+      if (totChip) totChip.textContent = total + ' Registered';
+
+      var appRate = document.getElementById('stat-approved-rate');
+      if (appRate) {
+        var appPct = total > 0 ? Math.round((approved / total) * 100) : 0;
+        appRate.textContent = appPct + '% Approved';
+      }
+
+      var scanRate = document.getElementById('stat-scanned-rate');
+      if (scanRate) {
+        var scanPct = approved > 0 ? Math.round((scanned / approved) * 100) : 0;
+        scanRate.textContent = scanPct + '% Admitted';
+      }
+
+      // Update Filter Tab Live Badges
+      var cAll = document.getElementById('tab-count-all');
+      var cPen = document.getElementById('tab-count-pending');
+      var cApp = document.getElementById('tab-count-approved');
+      var cRej = document.getElementById('tab-count-rejected');
+      if (cAll) cAll.textContent = total;
+      if (cPen) cPen.textContent = pending;
+      if (cApp) cApp.textContent = approved;
+      if (cRej) cRej.textContent = rejected;
+
+      var badge = document.getElementById('bellBadge');
+      if (pending > 0) { badge.textContent = pending; badge.style.display = 'flex'; }
+      else { badge.style.display = 'none'; }
+    }
+
+    // =============================================
+    // RENDER TABLE
+    // =============================================
+    function renderTable() {
+      var tbody = document.getElementById('ticketsBody');
+      var list = Object.values(normalizedTicketsMap);
+
+      var searchInput = document.getElementById('ticketSearchInput');
+      var searchQuery = searchInput ? searchInput.value.trim().toLowerCase() : '';
+
+      var filtered = list.filter(function(t) {
+        var matchFilter = (currentFilter === 'all' || t.status === currentFilter);
+        if (!matchFilter) return false;
+        if (!searchQuery) return true;
+        var name = (t.fullName || '').toLowerCase();
+        var phone = (t.whatsappNumber || '').toLowerCase();
+        var batch = (t.batchClass || '').toLowerCase();
+        var idNum = (t.idNumber || '').toLowerCase();
+        var ticketNum = (t.ticketNum || '').toLowerCase();
+        var groupRef = (t.groupRef || '').toLowerCase();
+        return name.indexOf(searchQuery) !== -1 ||
+               phone.indexOf(searchQuery) !== -1 ||
+               batch.indexOf(searchQuery) !== -1 ||
+               idNum.indexOf(searchQuery) !== -1 ||
+               ticketNum.indexOf(searchQuery) !== -1 ||
+               groupRef.indexOf(searchQuery) !== -1;
+      });
+
+      // Calculate newest timestamp for each group so entire orders stay strictly consecutive
+      var groupOrderTime = {};
+      filtered.forEach(function(item) {
+        var tTime = new Date(item.createdAt).getTime() || 0;
+        if (!groupOrderTime[item.groupRef] || tTime > groupOrderTime[item.groupRef]) {
+          groupOrderTime[item.groupRef] = tTime;
+        }
+      });
+
+      // Sort: newest group first, and within group by groupIndex ascending
+      filtered.sort(function(a, b) {
+        var groupDiff = (groupOrderTime[b.groupRef] || 0) - (groupOrderTime[a.groupRef] || 0);
+        if (groupDiff !== 0) return groupDiff;
+        return (a.groupIndex || 1) - (b.groupIndex || 1);
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="empty-state">' +
+          '<div class="empty-state-card">' +
+            '<div class="empty-icon-wrap"><i data-lucide="inbox" style="width:28px;height:28px;"></i></div>' +
+            '<div class="empty-title">No ' + (currentFilter === 'all' ? '' : currentFilter) + ' tickets found</div>' +
+            '<div class="empty-desc">' + (searchQuery ? 'No results matched your search query "' + escapeHtml(searchQuery) + '". Try another keyword or clear search.' : 'When bookings are registered, they will appear right here in real time.') + '</div>' +
+          '</div>' +
+        '</td></tr>';
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+        return;
+      }
+
+      var html = '';
+      for (var idx = 0; idx < filtered.length; idx++) {
+        var t = filtered[idx];
+        var isGroup = (t.paidTogether === true) && (t.groupTotal > 1);
+        var prevInGroup = isGroup && (idx > 0) && (filtered[idx - 1].groupRef === t.groupRef);
+        var nextInGroup = isGroup && (idx < filtered.length - 1) && (filtered[idx + 1].groupRef === t.groupRef);
+
+        var rowClasses = [];
+        if (isGroup) {
+          rowClasses.push('tr-grouped');
+          if (!prevInGroup) rowClasses.push('tr-group-first');
+          if (!nextInGroup) rowClasses.push('tr-group-last');
+          if (prevInGroup && nextInGroup) rowClasses.push('tr-group-middle');
+        }
+
+        var badgeClass = 'badge-' + t.status;
+        var actions = '';
+
+        if (t.status === 'pending') {
+          actions = '<button class="btn btn-gold" onclick="viewReceipt(\'' + t.key + '\')"><i data-lucide="eye" style="width:14px;height:14px;"></i> View</button>' +
+                    '<button class="btn btn-green" onclick="approveTicket(\'' + t.key + '\')"><i data-lucide="check" style="width:14px;height:14px;"></i> Approve</button>' +
+                    '<button class="btn btn-red" onclick="openReject(\'' + t.key + '\')"><i data-lucide="x" style="width:14px;height:14px;"></i> Reject</button>';
+        } else if (t.status === 'approved') {
+          actions = '<button class="btn btn-gold" onclick="viewReceipt(\'' + t.key + '\')"><i data-lucide="eye" style="width:14px;height:14px;"></i> View</button>' +
+                    '<button class="btn btn-gold" onclick="viewQR(\'' + t.key + '\')"><i data-lucide="ticket" style="width:14px;height:14px;"></i> Pass</button>' +
+                    '<button class="btn btn-whatsapp" onclick="sendWhatsAppDirect(\'' + t.key + '\')" title="Send pass via WhatsApp"><i data-lucide="send" style="width:14px;height:14px;"></i> WhatsApp</button>';
+        } else {
+          actions = '<button class="btn btn-gold" onclick="viewReceipt(\'' + t.key + '\')"><i data-lucide="eye" style="width:14px;height:14px;"></i> View</button> ' +
+                    '<span style="font-size:.7rem;color:var(--text-muted)">' + escapeHtml(t.adminNotes || '-') + '</span>';
+        }
+
+        var nameParts = (t.fullName || '').trim().split(/\s+/);
+        var initials = nameParts.length > 1 ? (nameParts[0][0] + nameParts[nameParts.length - 1][0]).toUpperCase() : (nameParts[0] ? nameParts[0].slice(0,2).toUpperCase() : '??');
+
+        var nameCell = '<div class="attendee-cell-wrap">' +
+          '<div class="attendee-avatar">' + initials + '</div>' +
+          '<div class="attendee-info">' +
+            '<span class="attendee-name-text">' + escapeHtml(t.fullName) + '</span>' +
+            (t.ticketNum ? '<span class="ticket-num-badge" onclick="copyText(\'' + escapeHtml(t.ticketNum) + '\', \'Ticket ID copied!\')" title="Click to copy ticket ID"><i data-lucide="ticket" style="width:10px;height:10px;"></i> ' + escapeHtml(t.ticketNum) + '</span>' : '') +
+            (t.idNumber ? '<span class="attendee-id-sub" style="font-size:.72rem;color:var(--text-muted);display:flex;align-items:center;gap:4px;"><i data-lucide="id-card" style="width:11px;height:11px;"></i> NIC: ' + escapeHtml(t.idNumber) + '</span>' : '') +
+            (isGroup ? '<div class="paid-together-badge" title="Paid together with ' + t.groupTotal + ' tickets in order ' + escapeHtml(t.groupRef) + '"><i data-lucide="link" style="width:11px;height:11px;"></i> Paid Together (' + t.groupIndex + ' of ' + t.groupTotal + ')</div>' : '') +
+          '</div>' +
+        '</div>';
+
+        var phoneCell = '<div class="phone-cell-wrap">' +
+          '<span class="phone-text">' + escapeHtml(t.whatsappNumber) + '</span>' +
+          '<button class="phone-copy-btn" onclick="copyText(\'' + escapeHtml(t.whatsappNumber) + '\', \'Phone number copied!\')" title="Copy Phone"><i data-lucide="copy" style="width:12px;height:12px;"></i></button>' +
+        '</div>';
+
+        var batchCell = '<span class="batch-text">' + escapeHtml(t.batchClass || '—') + '</span>';
+        var qtyCell = isGroup ?
+          ('<span class="qty-pill">Pass ' + t.groupIndex + '/' + t.groupTotal + '</span>') :
+          ('<span class="qty-pill">' + (t.numTickets || 1) + ' Ticket' + ((t.numTickets || 1) > 1 ? 's' : '') + '</span>');
+        var statusCell = '<span class="badge ' + badgeClass + '">' + t.status.toUpperCase() + '</span>';
+        var dateCell = '<span class="date-text">' + formatDate(t.createdAt) + '</span>';
+
+        html += '<tr class="' + rowClasses.join(' ') + '" data-group-ref="' + escapeHtml(t.groupRef || '') + '">' +
+          '<td>' + nameCell + '</td>' +
+          '<td class="hide-mobile">' + phoneCell + '</td>' +
+          '<td class="hide-mobile">' + batchCell + '</td>' +
+          '<td>' + qtyCell + '</td>' +
+          '<td>' + statusCell + '</td>' +
+          '<td class="hide-mobile">' + dateCell + '</td>' +
+          '<td class="action-buttons">' + actions + '</td>' +
+          '</tr>';
+      }
+      tbody.innerHTML = html;
+
+      // Group hover synchronization
+      attachGroupHover();
+
+      if(typeof lucide !== 'undefined') lucide.createIcons();
+    }
+
+    function attachGroupHover() {
+      var rows = document.querySelectorAll('#ticketsBody tr[data-group-ref]');
+      rows.forEach(function(row) {
+        var ref = row.getAttribute('data-group-ref');
+        if (!ref) return;
+        row.addEventListener('mouseenter', function() {
+          document.querySelectorAll('#ticketsBody tr[data-group-ref="' + ref + '"]').forEach(function(r) {
+            r.classList.add('group-hover');
+          });
+        });
+        row.addEventListener('mouseleave', function() {
+          document.querySelectorAll('#ticketsBody tr[data-group-ref="' + ref + '"]').forEach(function(r) {
+            r.classList.remove('group-hover');
+          });
+        });
+      });
+    }
+
+    function filterTickets(filter, btn) {
+      currentFilter = filter;
+      document.querySelectorAll('.filter-tab').forEach(function(t) { t.classList.remove('active'); });
+      btn.classList.add('active');
+      renderTable();
+    }
+
+    // =============================================
+    // APPROVE & BRANDED PASS GENERATION
+    // =============================================
+    function approveTicket(key) {
+      if (!confirm('Approve this ticket?')) return;
+      var t = normalizedTicketsMap[key];
+      if (!t) return;
+
+      var qrData = JSON.stringify({ ticketId: key, ref: t.refId, name: t.fullName, secret: QR_SECRET });
+
+      try {
+        if (typeof qrcode === 'undefined') {
+          showToast('QR generator library is loading, please try again in 1 second.', 'error');
+          return;
+        }
+
+        var qr = qrcode(0, 'M');
+        qr.addData(qrData);
+        qr.make();
+        var cleanQrUrl = qr.createDataURL(8, 2);
+
+        var passLabel = (t.paidTogether && t.groupTotal > 1) ? ('1 PERSON (PASS ' + t.groupIndex + '/' + t.groupTotal + ')') : '1 PERSON';
+
+        var xhr = new XMLHttpRequest();
+        xhr.open('PATCH', DB_URL + '/tickets/' + key + '.json', true);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.onload = function() {
+          if (xhr.status === 200) {
+            showToast('Ticket approved! Pass generated.', 'success');
+            if (t.parentKey && allTickets[t.parentKey]) {
+              allTickets[t.parentKey].status = 'approved';
+            }
+            if (allTickets[key]) {
+              allTickets[key].status = 'approved';
+              allTickets[key].qrCodeImage = cleanQrUrl;
+              allTickets[key].qrCodeData = qrData;
+            }
+            t.status = 'approved';
+            t.qrCodeImage = cleanQrUrl;
+            t.qrCodeData = qrData;
+            updateStats();
+            renderTable();
+            showQRModal(key, t, cleanQrUrl);
+          } else {
+            showToast('Failed to approve.', 'error');
+          }
+        };
+        xhr.onerror = function() { showToast('Network error.', 'error'); };
+        xhr.send(JSON.stringify({
+          refId: t.refId || key,
+          groupRef: t.groupRef || key,
+          groupIndex: t.groupIndex || 1,
+          groupTotal: t.groupTotal || 1,
+          paidTogether: t.paidTogether || false,
+          fullName: t.fullName,
+          whatsappNumber: t.whatsappNumber,
+          email: t.email,
+          idNumber: t.idNumber,
+          batchClass: t.batchClass,
+          numTickets: 1,
+          receiptImage: t.receiptImage,
+          receiptType: t.receiptType,
+          receiptFileName: t.receiptFileName,
+          status: 'approved',
+          qrCodeImage: cleanQrUrl,
+          qrCodeData: qrData,
+          approvedAt: new Date().toISOString()
+        }));
+      } catch(err) {
+        console.error('Approve error:', err);
+        showToast('Error generating pass: ' + err.message, 'error');
+      }
+    }
+
+    function approveGroup(groupRef) {
+      var groupTickets = Object.values(normalizedTicketsMap).filter(function(gt) {
+        return gt.groupRef === groupRef && gt.status === 'pending';
+      });
+      if (groupTickets.length === 0) {
+        showToast('No pending tickets in this group.', 'error');
+        return;
+      }
+      if (!confirm('Approve all ' + groupTickets.length + ' tickets in this payment group?')) return;
+
+      var patchPayload = {};
+      var count = groupTickets.length;
+
+      try {
+        groupTickets.forEach(function(gt) {
+          var qrData = JSON.stringify({ ticketId: gt.key, ref: gt.refId, name: gt.fullName, secret: QR_SECRET });
+          var qr = qrcode(0, 'M');
+          qr.addData(qrData);
+          qr.make();
+          var cleanQrUrl = qr.createDataURL(8, 2);
+
+          patchPayload[gt.key] = {
+            refId: gt.refId || gt.key,
+            groupRef: gt.groupRef,
+            groupIndex: gt.groupIndex,
+            groupTotal: gt.groupTotal,
+            paidTogether: true,
+            fullName: gt.fullName,
+            whatsappNumber: gt.whatsappNumber,
+            email: gt.email,
+            idNumber: gt.idNumber,
+            batchClass: gt.batchClass,
+            numTickets: 1,
+            receiptImage: gt.receiptImage,
+            receiptType: gt.receiptType,
+            receiptFileName: gt.receiptFileName,
+            status: 'approved',
+            qrCodeImage: cleanQrUrl,
+            qrCodeData: qrData,
+            approvedAt: new Date().toISOString()
+          };
+
+          if (gt.parentKey && allTickets[gt.parentKey]) {
+            patchPayload[gt.parentKey] = Object.assign({}, allTickets[gt.parentKey], { status: 'approved' });
+          }
+        });
+
+        var xhr = new XMLHttpRequest();
+        xhr.open('PATCH', DB_URL + '/tickets.json', true);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.onload = function() {
+          if (xhr.status === 200) {
+            document.getElementById('receiptModal').classList.remove('active');
+            showToast('All ' + count + ' tickets in order approved!', 'success');
+            loadTickets();
+          } else {
+            showToast('Failed to approve group.', 'error');
+          }
+        };
+        xhr.send(JSON.stringify(patchPayload));
+      } catch(err) {
+        console.error('Approve group error:', err);
+        showToast('Error generating passes: ' + err.message, 'error');
+      }
+    }
+
+    // Draws the official Figure 1 Minimalist Pass + Figure 2 Vibrant Chrome Title
+    function drawBrandedPassToCanvas(canvas, qrData, studentName, passLabel, refId) {
+      canvas.width = 600;
+      canvas.height = 840;
+      var ctx = canvas.getContext('2d');
+
+      // 1. Background gradient
+      var grad = ctx.createLinearGradient(0, 0, 0, 840);
+      grad.addColorStop(0, '#041306');
+      grad.addColorStop(0.5, '#020b03');
+      grad.addColorStop(1, '#010502');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 600, 840);
+
+      // Subtle ambient gold radial glow at top
+      var glow = ctx.createRadialGradient(300, 120, 10, 300, 120, 260);
+      glow.addColorStop(0, 'rgba(212, 175, 55, 0.12)');
+      glow.addColorStop(1, 'transparent');
+      ctx.fillStyle = glow;
+      ctx.fillRect(0, 0, 600, 400);
+
+      // 2. Double Gold Borders (Figure 1 style)
+      ctx.strokeStyle = '#d4af37';
+      ctx.lineWidth = 3;
+      ctx.strokeRect(18, 18, 564, 804);
+
+      ctx.strokeStyle = 'rgba(212, 175, 55, 0.42)';
+      ctx.lineWidth = 1.2;
+      ctx.strokeRect(27, 27, 546, 786);
+
+      // 3. College Header
+      ctx.fillStyle = '#d4af37';
+      ctx.font = '600 13px Cinzel, serif';
+      ctx.textAlign = 'center';
+      ctx.fillText("ST. BENEDICT'S COLLEGE", 300, 68);
+
+      // 4. Vibrant 3D Chrome Title Image
+      var titleImg = document.querySelector('.modal-title-stage img') || document.querySelector('.sidebar-logo') || document.querySelector('.lock-logo');
+      if (titleImg && titleImg.complete && titleImg.naturalWidth > 0) {
+        var imgW = 280;
+        var imgH = (titleImg.naturalHeight / titleImg.naturalWidth) * imgW;
+        ctx.drawImage(titleImg, 300 - (imgW / 2), 80, imgW, imgH);
+      } else {
+        ctx.fillStyle = '#f0d060';
+        ctx.font = 'bold 36px Cinzel, serif';
+        ctx.fillText("REDEUS'26", 300, 122);
+      }
+
+      // 5. Tagline
+      ctx.fillStyle = '#d4af37';
+      ctx.font = 'italic 13px Inter, sans-serif';
+      ctx.globalAlpha = 0.88;
+      ctx.fillText('"From the First Day to the Final Bow"', 300, 150);
+      ctx.globalAlpha = 1.0;
+
+      // 6. Divider
+      ctx.strokeStyle = 'rgba(212, 175, 55, 0.35)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(85, 174);
+      ctx.lineTo(210, 174);
+      ctx.stroke();
+
+      ctx.fillStyle = '#d4af37';
+      ctx.font = '600 11px Cinzel, serif';
+      ctx.fillText('◆   OFFICIAL ENTRY PASS   ◆', 300, 178);
+
+      ctx.beginPath();
+      ctx.moveTo(390, 174);
+      ctx.lineTo(515, 174);
+      ctx.stroke();
+
+      // 7. White Frame for QR Code
+      ctx.fillStyle = '#ffffff';
+      if (ctx.roundRect) {
+        ctx.beginPath();
+        ctx.roundRect(145, 202, 310, 310, 18);
+        ctx.fill();
+      } else {
+        ctx.fillRect(145, 202, 310, 310);
+      }
+
+      // 8. Generate and draw QR modules directly
+      var qr = qrcode(0, 'M');
+      qr.addData(qrData);
+      qr.make();
+      var count = qr.getModuleCount();
+      var qrAreaSize = 270;
+      var startX = 165;
+      var startY = 222;
+      var cellSize = qrAreaSize / count;
+
+      ctx.fillStyle = '#061709';
+      for (var r = 0; r < count; r++) {
+        for (var c = 0; c < count; c++) {
+          if (qr.isDark(r, c)) {
+            ctx.fillRect(
+              Math.round(startX + c * cellSize),
+              Math.round(startY + r * cellSize),
+              Math.ceil(cellSize),
+              Math.ceil(cellSize)
+            );
+          }
+        }
+      }
+
+      // 9. Student / Attendee Name
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 24px Cinzel, serif';
+      ctx.fillText((studentName || 'GUEST').toUpperCase(), 300, 560);
+
+      // 10. Pass Details Box (Figure 1)
+      ctx.fillStyle = 'rgba(7, 24, 10, 0.75)';
+      ctx.strokeStyle = 'rgba(212, 175, 55, 0.32)';
+      ctx.lineWidth = 1;
+      if (ctx.roundRect) {
+        ctx.beginPath();
+        ctx.roundRect(100, 586, 400, 88, 12);
+        ctx.fill();
+        ctx.stroke();
+      } else {
+        ctx.fillRect(100, 586, 400, 88);
+        ctx.strokeRect(100, 586, 400, 88);
+      }
+
+      // Vertical divider inside box
+      ctx.strokeStyle = 'rgba(212, 175, 55, 0.2)';
+      ctx.beginPath();
+      ctx.moveTo(300, 596);
+      ctx.lineTo(300, 664);
+      ctx.stroke();
+
+      // Left Col: PASS ALLOCATION
+      ctx.fillStyle = '#809270';
+      ctx.font = '500 11px Inter, sans-serif';
+      ctx.fillText('PASS ALLOCATION', 200, 616);
+
+      ctx.fillStyle = '#d4af37';
+      ctx.font = 'bold 16px Cinzel, serif';
+      ctx.fillText(passLabel || '1 PERSON', 200, 650);
+
+      // Right Col: TICKET NUMBER
+      ctx.fillStyle = '#809270';
+      ctx.font = '500 11px Inter, sans-serif';
+      ctx.fillText('TICKET NUMBER', 400, 616);
+
+      ctx.fillStyle = '#f0d060';
+      ctx.font = 'bold 16px JetBrains Mono, monospace';
+      ctx.fillText((refId || '').replace(/^#/, '').substring(0, 16), 400, 650);
+
+      // 11. Instruction & Batch Note
+      ctx.fillStyle = '#809270';
+      ctx.font = '11px Inter, sans-serif';
+      ctx.fillText('Show this pass on your phone screen at the entrance gate.', 300, 712);
+
+      ctx.fillStyle = '#a6892c';
+      ctx.font = '600 11px Cinzel, serif';
+      ctx.fillText('THE 2023 O/L AND 2026 A/L BATCH', 300, 752);
+    }
+
+    // Creates a luxury digital pass image with embedded vector QR
+    function createBrandedTicketPass(qrData, studentName, passLabel, refId) {
+      var canvas = document.createElement('canvas');
+      drawBrandedPassToCanvas(canvas, qrData, studentName, passLabel, refId);
+      return canvas.toDataURL('image/png');
+    }
+
+    function showQRModal(key, t, qrDataUrl) {
+      currentKey = key;
+      var isGroup = (t.paidTogether === true) && (t.groupTotal > 1);
+      var rawNum = t.refId || (key ? key.substring(0, 10).toUpperCase() : 'RED-0001');
+      var cleanNum = rawNum.replace(/^#/, '');
+
+      var allocText = '1 PERSON';
+      if (isGroup) {
+        allocText = '1 PERSON (Pass ' + (t.groupIndex || 1) + ' of ' + t.groupTotal + ')';
+      } else if ((t.numTickets || 1) > 1) {
+        allocText = t.numTickets + ' PERSONS';
+      }
+
+      if (document.getElementById('modalStudentName')) {
+        document.getElementById('modalStudentName').textContent = (t.fullName || 'Guest').toUpperCase();
+      }
+      if (document.getElementById('modalPassAlloc')) {
+        document.getElementById('modalPassAlloc').textContent = allocText;
+      }
+      if (document.getElementById('modalTicketNum')) {
+        document.getElementById('modalTicketNum').textContent = cleanNum;
+      }
+
+      // Generate pure, clean, razor-sharp QR code directly
+      var finalQrUrl = qrDataUrl;
+      try {
+        var qrData = t.qrCodeData || JSON.stringify({ ticketId: key, ref: cleanNum, name: t.fullName, secret: QR_SECRET });
+        var qr = qrcode(0, 'M');
+        qr.addData(qrData);
+        qr.make();
+        finalQrUrl = qr.createDataURL(8, 2);
+      } catch(e) {}
+
+      document.getElementById('qrImage').src = finalQrUrl;
+
+      // Set Student Pass View link
+      var base = window.location.href.split(/[?#]/)[0];
+      base = base.substring(0, base.lastIndexOf('/') + 1);
+      var passUrl = base + 'ticket.html?id=' + encodeURIComponent(key);
+      if (document.getElementById('modalStudentViewBtn')) {
+        document.getElementById('modalStudentViewBtn').href = passUrl;
+      }
+
+      document.getElementById('qrModal').classList.add('active');
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+
+    function viewQR(key) {
+      var t = normalizedTicketsMap[key];
+      if (!t) { showToast('Ticket not found.', 'error'); return; }
+      showQRModal(key, t, t.qrCodeImage);
+    }
+
+    function copyPassLink(key) {
+      if (!key) return;
+      var base = window.location.href.split(/[?#]/)[0];
+      base = base.substring(0, base.lastIndexOf('/') + 1);
+      var passUrl = base + 'ticket.html?id=' + encodeURIComponent(key);
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(passUrl).then(function() {
+          showToast('Pass link copied to clipboard!', 'success');
+        }).catch(function() {
+          showToast('Link: ' + passUrl, 'info');
+        });
+      } else {
+        showToast('Link: ' + passUrl, 'info');
+      }
+    }
+
+    // =============================================
+    // VIEW RECEIPT
+    // =============================================
+    function viewReceipt(key) {
+      currentKey = key;
+      var t = normalizedTicketsMap[key];
+      if (!t) return;
+
+      var isGroup = (t.paidTogether === true) && (t.groupTotal > 1);
+      var groupTickets = [];
+      if (t.groupRef) {
+        groupTickets = Object.values(normalizedTicketsMap).filter(function(gt) {
+          return gt.groupRef === t.groupRef;
+        });
+        groupTickets.sort(function(a, b) { return (a.groupIndex || 1) - (b.groupIndex || 1); });
+      }
+
+      var bannerHtml = '';
+      if (isGroup && groupTickets.length > 1) {
+        var totalAmount = (groupTickets.length * 8000).toLocaleString();
+        bannerHtml = '<div class="group-receipt-banner">' +
+          '<div class="banner-title"><i data-lucide="link"></i> PAID TOGETHER (' + groupTickets.length + ' TICKETS)</div>' +
+          '<div class="banner-sub">Order Ref: <strong style="color:var(--gold);">' + escapeHtml(t.groupRef) + '</strong> • Total Paid: Rs. ' + totalAmount + '</div>' +
+          '<div style="margin-top:8px;">' +
+            groupTickets.map(function(gt) {
+              var isCurrent = gt.key === t.key;
+              return '<div class="group-attendee-chip" style="' + (isCurrent ? 'border-color:var(--gold);background:rgba(212,175,55,0.12);' : '') + '">' +
+                '<strong>#' + gt.groupIndex + ' ' + escapeHtml(gt.fullName) + '</strong>' +
+                ' (' + escapeHtml(gt.batchClass || '-') + ')' +
+                ' <span class="badge badge-' + gt.status + '" style="font-size:0.65rem;padding:2px 6px;">' + gt.status + '</span>' +
+              '</div>';
+            }).join('') +
+          '</div>' +
+        '</div>';
+      }
+
+      document.getElementById('receiptTicketInfo').innerHTML =
+        bannerHtml +
+        '<div class="ticket-info-row"><span class="ticket-info-label">Current Attendee</span><span class="ticket-info-value" style="color:var(--gold);font-weight:700;">' + escapeHtml(t.fullName) + (isGroup ? ' (Ticket ' + t.groupIndex + ' of ' + t.groupTotal + ')' : '') + '</span></div>' +
+        '<div class="ticket-info-row"><span class="ticket-info-label">WhatsApp</span><span class="ticket-info-value">' + escapeHtml(t.whatsappNumber) + '</span></div>' +
+        '<div class="ticket-info-row"><span class="ticket-info-label">Email</span><span class="ticket-info-value">' + escapeHtml(t.email || '-') + '</span></div>' +
+        '<div class="ticket-info-row"><span class="ticket-info-label">NIC Number</span><span class="ticket-info-value">' + escapeHtml(t.idNumber || '-') + '</span></div>' +
+        '<div class="ticket-info-row"><span class="ticket-info-label">Batch / Class</span><span class="ticket-info-value">' + escapeHtml(t.batchClass || '-') + '</span></div>' +
+        '<div class="ticket-info-row"><span class="ticket-info-label">Pass Ref</span><span class="ticket-info-value" style="font-family:monospace;color:var(--gold);">' + escapeHtml(t.refId || key) + '</span></div>' +
+        '<div class="ticket-info-row"><span class="ticket-info-label">Status</span><span class="ticket-info-value" style="text-transform:uppercase;">' + t.status + '</span></div>';
+
+      var img = document.getElementById('receiptImage');
+      var pdfBox = document.getElementById('receiptPdfContainer');
+      var noMsg = document.getElementById('noReceiptMsg');
+      var rTitle = document.getElementById('receiptTitle');
+
+      var receipt = t.receiptImage || t.receiptData || '';
+      var isPdf = (t.receiptType === 'pdf') ||
+                  (receipt && receipt.startsWith('data:application/pdf')) ||
+                  (t.receiptFileName && t.receiptFileName.toLowerCase().endsWith('.pdf'));
+
+      if (isPdf && receipt) {
+        img.style.display = 'none';
+        pdfBox.style.display = 'block';
+        noMsg.style.display = 'none';
+        rTitle.textContent = 'PDF Payment Receipt:';
+        document.getElementById('receiptPdfName').textContent = t.receiptFileName || (t.fullName + '_receipt.pdf');
+
+        try {
+          var blobUrl = dataUrlToBlobUrl(receipt, 'application/pdf');
+          document.getElementById('receiptPdfOpenLink').href = blobUrl;
+        } catch(e) {
+          document.getElementById('receiptPdfOpenLink').href = receipt;
+        }
+      } else if (receipt) {
+        img.src = receipt;
+        img.style.display = 'block';
+        pdfBox.style.display = 'none';
+        noMsg.style.display = 'none';
+        rTitle.textContent = 'Image Payment Receipt:';
+      } else {
+        img.style.display = 'none';
+        pdfBox.style.display = 'none';
+        noMsg.style.display = 'block';
+        rTitle.textContent = 'Payment Receipt:';
+      }
+
+      // Update modal footer buttons dynamically based on single vs group approval
+      var footerEl = document.getElementById('receiptModalFooter');
+      if (footerEl) {
+        var pendingGroupCount = groupTickets.filter(function(gt) { return gt.status === 'pending'; }).length;
+        var footerHtml = '<button class="modal-btn modal-btn-reject" onclick="document.getElementById(\'receiptModal\').classList.remove(\'active\');openReject(\'' + t.key + '\')"><i data-lucide="x"></i> Reject</button>';
+
+        if (t.status === 'pending') {
+          footerHtml += '<button class="modal-btn modal-btn-approve" onclick="document.getElementById(\'receiptModal\').classList.remove(\'active\');approveTicket(\'' + t.key + '\')"><i data-lucide="check"></i> Approve Ticket</button>';
+        }
+        if (isGroup && pendingGroupCount > 1) {
+          footerHtml += '<button class="modal-btn modal-btn-gold" onclick="approveGroup(\'' + t.groupRef + '\')"><i data-lucide="check-check"></i> Approve All (' + pendingGroupCount + ')</button>';
+        }
+        footerEl.innerHTML = footerHtml;
+      }
+
+      document.getElementById('receiptModal').classList.add('active');
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+
+    function dataUrlToBlobUrl(dataUrl, defaultType) {
+      var parts = dataUrl.split(',');
+      var mime = (parts[0].match(/:(.*?);/) || [])[1] || defaultType || 'application/octet-stream';
+      var binary = atob(parts[1]);
+      var array = [];
+      for (var i = 0; i < binary.length; i++) {
+        array.push(binary.charCodeAt(i));
+      }
+      var blob = new Blob([new Uint8Array(array)], { type: mime });
+      return URL.createObjectURL(blob);
+    }
+
+    // =============================================
+    // REJECT
+    // =============================================
+    function openReject(key) {
+      currentKey = key;
+      document.getElementById('rejectReason').value = '';
+      document.getElementById('rejectModal').classList.add('active');
+    }
+
+    function confirmReject() {
+      if (!currentKey) return;
+      var reason = document.getElementById('rejectReason').value.trim() || 'Rejected';
+      var t = normalizedTicketsMap[currentKey];
+
+      var xhr = new XMLHttpRequest();
+      xhr.open('PATCH', DB_URL + '/tickets/' + currentKey + '.json', true);
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.onload = function() {
+        if (xhr.status === 200) {
+          document.getElementById('rejectModal').classList.remove('active');
+          showToast('Ticket rejected.', 'success');
+          if (t) {
+            t.status = 'rejected';
+            t.adminNotes = reason;
+          }
+          if (allTickets[currentKey]) {
+            allTickets[currentKey].status = 'rejected';
+            allTickets[currentKey].adminNotes = reason;
+          }
+          updateStats();
+          renderTable();
+        }
+      };
+      xhr.send(JSON.stringify({ status: 'rejected', adminNotes: reason, rejectedAt: new Date().toISOString() }));
+    }
+
+    // =============================================
+    // WHATSAPP & QR SHARING
+    // =============================================
+    function sendWhatsApp(mode) {
+      if (currentKey) sendWhatsAppDirect(currentKey, mode);
+    }
+
+    function sendWhatsAppDirect(key, preferredMode) {
+      var t = normalizedTicketsMap[key];
+      if (!t) return;
+      var phone = t.whatsappNumber.replace(/[^0-9]/g, '');
+      if (phone.startsWith('0')) phone = '94' + phone.substring(1);
+
+      // Auto-compute digital pass link
+      var passUrl;
+      if (typeof USER_PORTAL_URL === 'string' && USER_PORTAL_URL.trim()) {
+        var cleanBase = USER_PORTAL_URL.trim().replace(/\/+$/, '');
+        passUrl = cleanBase + '/ticket.html?id=' + encodeURIComponent(key);
+      } else {
+        var base = window.location.href.split(/[?#]/)[0];
+        base = base.substring(0, base.lastIndexOf('/') + 1);
+        passUrl = base + 'ticket.html?id=' + encodeURIComponent(key);
+      }
+
+      var rawNum = t.refId || (key ? key.substring(0, 10).toUpperCase() : 'RED-0001');
+      var cleanNum = rawNum.replace(/^#/, '');
+
+      // Super clean, lightweight, non-bloated caption
+      var passInfo = (t.paidTogether && t.groupTotal > 1) ? (' (Pass ' + t.groupIndex + '/' + t.groupTotal + ')') : '';
+      var caption = '🎫 *REDEUS\'26 Entry Pass*' + passInfo + '\n' +
+                    '👤 *' + t.fullName + '* | 🎟️ *#' + cleanNum + '*\n' +
+                    '📲 *Pass:* ' + passUrl;
+
+      // Copy the high-res pass photo to clipboard so Ctrl+V in WhatsApp immediately attaches it
+      copyPassPhoto(key, true);
+
+      showToast('📸 Pass photo copied! In WhatsApp, press Ctrl+V & click Send.', 'success');
+
+      var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+      if (isMobile) {
+        // Mobile device: opens WhatsApp mobile app
+        window.open('https://wa.me/' + phone + '?text=' + encodeURIComponent(caption), '_blank');
+      } else if (preferredMode === 'web') {
+        // Explicitly requested WhatsApp Web
+        window.open('https://web.whatsapp.com/send?phone=' + phone + '&text=' + encodeURIComponent(caption), '_blank');
+      } else {
+        // Desktop default: Directly opens installed WhatsApp Desktop application via whatsapp:// protocol
+        window.location.href = 'whatsapp://send?phone=' + phone + '&text=' + encodeURIComponent(caption);
+      }
+    }
+
+    function copyPassPhoto(key, silent) {
+      var t = normalizedTicketsMap[key];
+      if (!t) return;
+      var rawNum = t.refId || (key ? key.substring(0, 10).toUpperCase() : 'RED-0001');
+      var cleanNum = rawNum.replace(/^#/, '');
+      var allocText = (t.paidTogether && t.groupTotal > 1) ? ('1 PERSON (PASS ' + t.groupIndex + '/' + t.groupTotal + ')') : ((t.numTickets || 1) + ' PERSON' + ((t.numTickets || 1) > 1 ? 'S' : ''));
+      var qrData = t.qrCodeData || JSON.stringify({ ticketId: key, ref: cleanNum, name: t.fullName, secret: QR_SECRET });
+
+      try {
+        var canvas = document.createElement('canvas');
+        drawBrandedPassToCanvas(canvas, qrData, t.fullName, allocText, cleanNum);
+
+        canvas.toBlob(function(blob) {
+          if (!blob) {
+            if (!silent) showToast('Could not generate pass photo.', 'error');
+            return;
+          }
+          if (navigator.clipboard && navigator.clipboard.write) {
+            navigator.clipboard.write([
+              new ClipboardItem({ 'image/png': blob })
+            ]).then(function() {
+              if (!silent) showToast('📸 Pass Photo copied! Press Ctrl+V in WhatsApp.', 'success');
+            }).catch(function(err) {
+              console.warn('Clipboard write error:', err);
+              if (!silent) showToast('Clipboard unavailable. Use Download Pass.', 'error');
+            });
+          }
+        }, 'image/png');
+      } catch(err) {
+        console.warn('Copy pass photo error:', err);
+      }
+    }
+
+    function downloadQR() {
+      if (currentKey) downloadQRDirect(currentKey);
+    }
+
+    function downloadQRDirect(key) {
+      var t = normalizedTicketsMap[key];
+      if (!t) return;
+      var rawNum = t.refId || (key ? key.substring(0, 10).toUpperCase() : 'RED-0001');
+      var cleanNum = rawNum.replace(/^#/, '');
+      var allocText = (t.paidTogether && t.groupTotal > 1) ? ('1 PERSON (PASS ' + t.groupIndex + '/' + t.groupTotal + ')') : ((t.numTickets || 1) + ' PERSON' + ((t.numTickets || 1) > 1 ? 'S' : ''));
+      var qrData = t.qrCodeData || JSON.stringify({ ticketId: key, ref: cleanNum, name: t.fullName, secret: QR_SECRET });
+
+      try {
+        var passUrl = createBrandedTicketPass(qrData, t.fullName, allocText, cleanNum);
+        var a = document.createElement('a');
+        a.href = passUrl;
+        a.download = 'REDEUS26_Pass_' + (t.fullName ? t.fullName.replace(/\s+/g, '_') : key) + '_' + cleanNum.replace(/[^a-zA-Z0-9]/g, '') + '.png';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        showToast('Official branded pass downloaded!', 'success');
+      } catch(err) {
+        console.error('Download pass error:', err);
+        // Fallback to QR image if canvas fails
+        var img = document.getElementById('qrImage');
+        var src = (t && t.qrCodeImage) ? t.qrCodeImage : (img ? img.src : null);
+        if (src) {
+          var a2 = document.createElement('a');
+          a2.href = src;
+          a2.download = 'REDEUS26_QR_' + cleanNum + '.png';
+          document.body.appendChild(a2);
+          a2.click();
+          document.body.removeChild(a2);
+        }
+      }
+    }
+
+    // =============================================
+    // FINANCIAL EXCEL & GOOGLE SHEETS SYNC
+    // =============================================
+    function openExcelSyncModal() {
+      var modal = document.getElementById('excelSyncModal');
+      if (modal) {
+        modal.classList.add('active');
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+      }
+    }
+
+    function escapeCsv(val) {
+      if (val === null || val === undefined) return '""';
+      var s = String(val).replace(/"/g, '""');
+      return '"' + s + '"';
+    }
+
+    function exportToExcel() {
+      var tickets = Object.values(normalizedTicketsMap);
+      if (!tickets || tickets.length === 0) {
+        showToast('No ticket records available to export.', 'error');
+        return;
+      }
+
+      var pricePerTicket = 8000;
+      var approvedCount = 0;
+      var pendingCount = 0;
+      var rejectedCount = 0;
+      var scannedCount = 0;
+
+      // Group and sort tickets consecutively
+      var groupOrderTime = {};
+      tickets.forEach(function(item) {
+        var tTime = new Date(item.createdAt).getTime() || 0;
+        if (!groupOrderTime[item.groupRef] || tTime > groupOrderTime[item.groupRef]) {
+          groupOrderTime[item.groupRef] = tTime;
+        }
+      });
+      var sorted = tickets.slice().sort(function(a, b) {
+        var groupDiff = (groupOrderTime[b.groupRef] || 0) - (groupOrderTime[a.groupRef] || 0);
+        if (groupDiff !== 0) return groupDiff;
+        return (a.groupIndex || 1) - (b.groupIndex || 1);
+      });
+
+      var rows = [];
+      // CSV Column Headers
+      rows.push([
+        'Ticket #',
+        'Attendee Name',
+        'WhatsApp Number',
+        'Batch / Class',
+        'Ticket Price (LKR)',
+        'Payment Status',
+        'Revenue (LKR)',
+        'Gate Entry',
+        'Scanned Time',
+        'Registration Date',
+        'Admin Notes'
+      ]);
+
+      sorted.forEach(function(t) {
+        var isApproved = (t.status === 'approved');
+        var isPending = (t.status === 'pending');
+        var isRejected = (t.status === 'rejected');
+
+        if (isApproved) approvedCount++;
+        if (isPending) pendingCount++;
+        if (isRejected) rejectedCount++;
+        if (t.scanned) scannedCount++;
+
+        var rawNum = t.refId || (t.key ? t.key.substring(0, 10).toUpperCase() : '');
+        var cleanNum = rawNum.replace(/^#/, '');
+        var numDisplay = '#' + cleanNum;
+
+        var phoneStr = t.whatsappNumber ? ("'" + t.whatsappNumber) : '';
+        var statusStr = (t.status || 'pending').toUpperCase();
+        var itemRevenue = isApproved ? pricePerTicket : 0;
+        var gateStatus = t.scanned ? 'ENTERED' : 'NOT ENTERED';
+        var scannedDate = t.scannedAt ? new Date(t.scannedAt).toLocaleString() : (t.scanned ? 'Entered' : '');
+        var regDate = t.createdAt ? new Date(t.createdAt).toLocaleString() : '';
+        var notes = t.adminNotes || '';
+
+        rows.push([
+          numDisplay,
+          t.fullName || '',
+          phoneStr,
+          t.batchClass || '',
+          pricePerTicket,
+          statusStr,
+          itemRevenue,
+          gateStatus,
+          scannedDate,
+          regDate,
+          notes
+        ]);
+      });
+
+      var totalRevenue = approvedCount * pricePerTicket;
+      var pendingRevenue = pendingCount * pricePerTicket;
+
+      // Add financial summary rows
+      rows.push(['', '', '', '', '', '', '', '', '', '', '']);
+      rows.push(['=== REDEUS\'26 FINANCIAL & ATTENDANCE SUMMARY ===', '', '', '', '', '', '', '', '', '', '']);
+      rows.push(['Ticket Price (Per Attendee)', 'LKR 8,000', '', '', '', '', '', '', '', '', '']);
+      rows.push(['Total Registrations', sorted.length, '', '', '', '', '', '', '', '', '']);
+      rows.push(['Approved / Paid Attendees', approvedCount, '', '', '', '', '', '', '', '', '']);
+      rows.push(['TOTAL REVENUE COLLECTED (LKR)', totalRevenue, '', '', '', '', '', '', '', '', '']);
+      rows.push(['Pending Payments Under Review (LKR)', pendingRevenue, '', '', '', '', '', '', '', '', '']);
+      rows.push(['Rejected Bookings', rejectedCount, '', '', '', '', '', '', '', '', '']);
+      rows.push(['Total Admitted At Gate', scannedCount, '', '', '', '', '', '', '', '', '']);
+      rows.push(['Report Generated At', new Date().toLocaleString(), '', '', '', '', '', '', '', '', '']);
+
+      // Build CSV string with UTF-8 BOM so Excel opens with proper encoding
+      var csvLines = rows.map(function(row) {
+        return row.map(escapeCsv).join(',');
+      });
+      var csvString = '\uFEFF' + csvLines.join('\r\n');
+
+      var blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+      var url = URL.createObjectURL(blob);
+      var link = document.createElement('a');
+      var today = new Date().toISOString().split('T')[0];
+      link.href = url;
+      link.download = 'REDEUS26_Financial_Ledger_' + today + '.csv';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      showToast('Excel financial ledger downloaded!', 'success');
+    }
+
+    function copyGoogleAppsScript() {
+      var scriptContent = [
+        '/**',
+        ' * REDEUS\'26 — St. Benedict\'s College Batch Gathering',
+        ' * Automated Live Sync: Firebase Realtime Database -> Google Sheets',
+        ' * Runs in Google Apps Script (Tools > Script editor / Extensions > Apps Script)',
+        ' */',
+        'function syncRedeusTickets() {',
+        '  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();',
+        '  var firebaseUrl = "https://batch-party-69ac1-default-rtdb.firebaseio.com/tickets.json";',
+        '',
+        '  var response = UrlFetchApp.fetch(firebaseUrl, { muteHttpExceptions: true });',
+        '  if (response.getResponseCode() !== 200) {',
+        '    Logger.log("Error fetching database: " + response.getContentText());',
+        '    return;',
+        '  }',
+        '',
+        '  var data = JSON.parse(response.getContentText());',
+        '  if (!data) {',
+        '    Logger.log("No data found in database.");',
+        '    return;',
+        '  }',
+        '',
+        '  sheet.clear();',
+        '',
+        '  var headers = [',
+        '    ["Ticket #", "Attendee Name", "WhatsApp Number", "Batch / Class", "Price (LKR)", "Status", "Revenue (LKR)", "Gate Entry", "Scanned At", "Booking Date"]',
+        '  ];',
+        '',
+        '  var rows = [];',
+        '  var approved = 0, pending = 0, rejected = 0, scanned = 0;',
+        '  var price = 8000;',
+        '',
+        '  for (var key in data) {',
+        '    var t = data[key];',
+        '    var st = (t.status || "pending").toLowerCase();',
+        '    if (st === "approved") approved++;',
+        '    else if (st === "pending") pending++;',
+        '    else if (st === "rejected") rejected++;',
+        '    if (t.scanned) scanned++;',
+        '',
+        '    var rawNum = t.refId || (key ? key.substring(0, 10).toUpperCase() : "");',
+        '    var ticketNum = "#" + rawNum.replace(/^#/, "");',
+        '    var rev = (st === "approved") ? price : 0;',
+        '    var scannedText = t.scannedAt ? new Date(t.scannedAt).toLocaleString() : (t.scanned ? "ENTERED" : "NO");',
+        '    var createdText = t.createdAt ? new Date(t.createdAt).toLocaleString() : "";',
+        '',
+        '    rows.push([',
+        '      ticketNum,',
+        '      t.fullName || "",',
+        '      "\'" + (t.whatsappNumber || ""),',
+        '      t.batchClass || "",',
+        '      price,',
+        '      st.toUpperCase(),',
+        '      rev,',
+        '      t.scanned ? "ENTERED" : "NO",',
+        '      scannedText,',
+        '      createdText',
+        '    ]);',
+        '  }',
+        '',
+        '  // Write Headers',
+        '  var headerRange = sheet.getRange(1, 1, 1, headers[0].length);',
+        '  headerRange.setValues(headers)',
+        '             .setFontWeight("bold")',
+        '             .setBackground("#0d2b0d")',
+        '             .setFontColor("#d4af37")',
+        '             .setHorizontalAlignment("center");',
+        '',
+        '  if (rows.length > 0) {',
+        '    var dataRange = sheet.getRange(2, 1, rows.length, headers[0].length);',
+        '    dataRange.setValues(rows);',
+        '  }',
+        '',
+        '  // Financial Summary at Bottom',
+        '  var sRow = rows.length + 4;',
+        '  var summary = [',
+        '    ["REDEUS\'26 FINANCIAL AUDIT & METRICS", ""],',
+        '    ["Ticket Price", "Rs. 8,000"],',
+        '    ["Approved / Paid Tickets", approved],',
+        '    ["TOTAL REVENUE COLLECTED", "Rs. " + (approved * price).toLocaleString()],',
+        '    ["Pending Funds (Under Review)", "Rs. " + (pending * price).toLocaleString()],',
+        '    ["Rejected Registrations", rejected],',
+        '    ["Total Attendees Checked In", scanned],',
+        '    ["Last Synced", new Date().toLocaleString()]',
+        '  ];',
+        '  var sumRange = sheet.getRange(sRow, 1, summary.length, 2);',
+        '  sumRange.setValues(summary).setFontWeight("bold");',
+        '  sheet.getRange(sRow, 1, 1, 2).setBackground("#d4af37").setFontColor("#061206");',
+        '  sheet.getRange(sRow + 3, 1, 1, 2).setBackground("#2ecc71").setFontColor("#ffffff");',
+        '',
+        '  sheet.autoResizeColumns(1, headers[0].length);',
+        '  SpreadsheetApp.flush();',
+        '  Logger.log("REDEUS\'26 Sync complete: " + rows.length + " rows.");',
+        '}'
+      ].join('\n');
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(scriptContent).then(function() {
+          showToast('Google Sheets sync script copied!', 'success');
+        }).catch(function() {
+          copyFallback(scriptContent);
+        });
+      } else {
+        copyFallback(scriptContent);
+      }
+
+      function copyFallback(text) {
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        try {
+          document.execCommand('copy');
+          showToast('Google Sheets sync script copied!', 'success');
+        } catch(e) {
+          showToast('Failed to copy script to clipboard.', 'error');
+        }
+        document.body.removeChild(ta);
+      }
+    }
+
+    // =============================================
+    // NAV
+    // =============================================
+    function showPage(pageId, el) {
+      document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
+      document.getElementById('page-' + pageId).classList.add('active');
+      document.querySelectorAll('.nav-links a').forEach(function(a) { a.classList.remove('active'); });
+      if (el) el.classList.add('active');
+      document.getElementById('sidebar').classList.remove('mobile-open');
+    }
+
+    // =============================================
+    // UTILS
+    // =============================================
+    function formatDate(dateStr) {
+      if (!dateStr) return '—';
+      var d = new Date(dateStr), now = new Date();
+      var diff = Math.round((now - d) / 60000);
+      if (diff < 1) return 'Just now';
+      if (diff < 60) return diff + 'm ago';
+      if (diff < 1440) return Math.round(diff / 60) + 'h ago';
+      return d.toLocaleDateString();
+    }
+
+    function showToast(msg, type) {
+      var c = document.getElementById('toastContainer');
+      var t = document.createElement('div');
+      t.className = 'toast ' + (type || 'error');
+      t.textContent = msg;
+      c.appendChild(t);
+      setTimeout(function() { t.classList.add('show'); }, 10);
+      setTimeout(function() { t.classList.remove('show'); setTimeout(function() { t.remove(); }, 300); }, 4000);
+    }
+
+    function shakeBell() {
+      var b = document.getElementById('bellIcon');
+      b.style.animation = 'none'; void b.offsetWidth;
+      b.style.animation = 'bellShake .5s';
+    }
+
+    var audioCtx = null;
+    var userInteracted = false;
+    ['click', 'touchstart', 'keydown'].forEach(function(evt) {
+      document.addEventListener(evt, function() {
+        userInteracted = true;
+        if (audioCtx && audioCtx.state === 'suspended') {
+          audioCtx.resume().catch(function(){});
+        }
+      }, { once: true });
+    });
+
+    function playSound() {
+      if (!userInteracted) return; // Prevent autoplay policy warning before user clicks
+      try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') {
+          audioCtx.resume().catch(function(){});
+        }
+        var osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
+        osc.type = 'sine'; osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.2);
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.start(); osc.stop(audioCtx.currentTime + 0.2);
+      } catch(e) {}
+    }
+
+    // Bell shake keyframe
+    var style = document.createElement('style');
+    style.textContent = '@keyframes bellShake{0%,100%{transform:rotate(0)}25%{transform:rotate(15deg)}50%{transform:rotate(-15deg)}75%{transform:rotate(10deg)}}';
+    document.head.appendChild(style);
+  </script>
+</body>
+</html>

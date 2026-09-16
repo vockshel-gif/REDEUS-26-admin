@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>REDEUS'26 — Official Entry Pass</title>
+  <meta property="og:title" content="REDEUS'26 — Official Entry Pass">
+  <meta property="og:description" content="St. Benedict's College • The 2023 O/L and 2026 A/L Batch Gathering">
+  <meta property="og:image" content="official-poster.png">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23d4af37' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z'/><path d='M13 5v2'/><path d='M13 17v2'/><path d='M13 11v2'/></svg>">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
+  <script src="qrcode.min.js"></script>
+  <style>
+    [data-lucide]{display:inline-block;width:1em;height:1em;vertical-align:middle;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #030a04;
+      --ticket-bg: #041306;
+      --box-bg: rgba(7, 24, 10, 0.75);
+      --gold: #d4af37;
+      --gold-bright: #f0d060;
+      --gold-dim: #a6892c;
+      --text: #f0e6d0;
+      --text-muted: #809270;
+      --success: #2ecc71;
+      --admitted: #3498db;
+    }
+    html { overflow-x: hidden !important; max-width: 100% !important; width: 100% !important; }
+    body {
+      min-height: 100vh;
+      overflow-x: hidden !important;
+      max-width: 100% !important;
+      width: 100% !important;
+      background: radial-gradient(ellipse 75% 65% at 50% 25%, #08210f 0%, #041006 65%, #010502 100%);
+      font-family: 'Inter', sans-serif;
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 30px 15px 40px;
+    }
+
+    /* Ambient glow */
+    .ambient-glow {
+      position: fixed;
+      top: -10%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 650px;
+      height: 450px;
+      background: radial-gradient(circle, rgba(212, 175, 55, 0.12) 0%, rgba(8, 35, 15, 0.25) 40%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .pass-wrapper {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 410px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* Figure 1 Double-Gold Border Minimalist Ticket Card */
+    .ticket-card {
+      width: 100%;
+      background: var(--ticket-bg);
+      border: 2px solid var(--gold);
+      outline: 1.5px solid rgba(212, 175, 55, 0.4);
+      outline-offset: -9px;
+      border-radius: 14px;
+      padding: 36px 26px 30px;
+      text-align: center;
+      position: relative;
+      box-shadow: 0 18px 50px rgba(0, 0, 0, 0.85), 0 0 30px rgba(212, 175, 55, 0.12);
+    }
+
+    /* Top Institution Title */
+    .college-header {
+      font-family: 'Cinzel', serif;
+      font-size: 0.82rem;
+      letter-spacing: 3px;
+      color: var(--gold);
+      text-transform: uppercase;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    /* Vibrant Topic / Title Stage */
+    .title-stage {
+      max-width: 290px;
+      margin: 4px auto 6px;
+      position: relative;
+    }
+    .title-stage img {
+      width: 100%;
+      height: auto;
+      display: block;
+      filter: drop-shadow(0 4px 18px rgba(212, 175, 55, 0.35)) drop-shadow(0 6px 25px rgba(0,0,0,0.8));
+    }
+
+    /* Tagline */
+    .event-tagline {
+      font-style: italic;
+      font-size: 0.8rem;
+      color: var(--gold);
+      opacity: 0.85;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+    }
+
+    /* Divider */
+    .pass-divider {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      font-family: 'Cinzel', serif;
+      font-size: 0.72rem;
+      letter-spacing: 2px;
+      color: var(--gold);
+      text-transform: uppercase;
+      font-weight: 600;
+      margin-bottom: 22px;
+      position: relative;
+    }
+    .pass-divider::before,
+    .pass-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.4), transparent);
+    }
+    .pass-divider span {
+      font-size: 0.65rem;
+      color: var(--gold);
+    }
+
+    /* Crisp Centered QR Code Frame */
+    .qr-frame {
+      background: #ffffff;
+      padding: 12px;
+      border-radius: 16px;
+      display: inline-block;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.65);
+      margin-bottom: 22px;
+    }
+    .qr-frame img {
+      width: 215px;
+      height: 215px;
+      display: block;
+      border-radius: 6px;
+    }
+
+    /* Student Name */
+    .student-name {
+      font-family: 'Cinzel', serif;
+      font-size: 1.45rem;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: 1px;
+      margin-bottom: 20px;
+      text-transform: uppercase;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
+    }
+
+    /* Minimalist Details Box (Figure 1) */
+    .pass-details-box {
+      background: var(--box-bg);
+      border: 1px solid rgba(212, 175, 55, 0.28);
+      border-radius: 12px;
+      padding: 14px 18px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+    .detail-col {
+      text-align: center;
+    }
+    .detail-col:first-child {
+      border-right: 1px solid rgba(212, 175, 55, 0.18);
+    }
+    .col-lbl {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 5px;
+      display: block;
+      font-weight: 500;
+    }
+    .col-val {
+      font-family: 'Cinzel', serif;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--gold);
+      display: block;
+      letter-spacing: 0.5px;
+    }
+    .col-val.mono-code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.95rem;
+      color: var(--gold-bright);
+    }
+    .group-tag {
+      display: block;
+      font-size: 0.65rem;
+      color: var(--gold);
+      margin-top: 2px;
+      opacity: 0.85;
+      font-family: 'Inter', sans-serif;
+    }
+
+    /* Instructions & Batch Subtext */
+    .pass-instruction {
+      font-size: 0.74rem;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+      line-height: 1.4;
+    }
+    .pass-batch {
+      font-family: 'Cinzel', serif;
+      font-size: 0.68rem;
+      letter-spacing: 1.5px;
+      color: var(--gold-dim);
+      text-transform: uppercase;
+    }
+
+    /* Status Badge */
+    .status-badge-wrap {
+      margin-top: 15px;
+    }
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 14px;
+      border-radius: 20px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      background: rgba(46, 204, 113, 0.12);
+      color: var(--success);
+      border: 1px solid rgba(46, 204, 113, 0.4);
+    }
+    .status-badge.admitted {
+      background: rgba(52, 152, 219, 0.15);
+      color: var(--admitted);
+      border-color: rgba(52, 152, 219, 0.4);
+    }
+
+    /* Save Pass Button Below Card */
+    .action-btn {
+      width: 100%;
+      margin-top: 20px;
+      padding: 13px;
+      background: linear-gradient(135deg, var(--gold-dim), var(--gold), var(--gold-bright));
+      color: #041006;
+      border: none;
+      border-radius: 10px;
+      font-family: 'Cinzel', serif;
+      font-weight: 700;
+      font-size: 0.95rem;
+      letter-spacing: 1.5px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      text-decoration: none;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 4px 18px rgba(212, 175, 55, 0.35);
+    }
+    .action-btn:hover {
+      transform: scale(1.02);
+      box-shadow: 0 6px 25px rgba(212, 175, 55, 0.55);
+    }
+
+    /* Loading / Error */
+    .loading-state, .error-state {
+      text-align: center;
+      padding: 60px 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="ambient-glow"></div>
+
+  <div class="pass-wrapper">
+    <div id="loadingState" class="loading-state">
+      <div style="margin-bottom: 12px;"><i data-lucide="loader" style="width:2.5rem;height:2.5rem;color:var(--gold);animation:spin 1.5s linear infinite;"></i></div>
+      <p style="color: var(--gold); font-weight: 600; font-family:'Cinzel',serif;">Retrieving official pass...</p>
+      <p style="font-size: 0.72rem; color: var(--text-muted); margin-top: 6px;">St. Benedict's College • REDEUS'26</p>
+    </div>
+
+    <div id="errorState" class="error-state" style="display: none;">
+      <div style="margin-bottom: 12px;"><i data-lucide="x-circle" style="width:2.5rem;height:2.5rem;color:#e74c3c;"></i></div>
+      <p style="color: #e74c3c; font-weight: 600;" id="errorMessage">Ticket not found.</p>
+      <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 6px;">Please check the link sent via WhatsApp.</p>
+    </div>
+
+    <div id="ticketContent" style="display: none; width: 100%;">
+      <!-- Figure 1 Minimalist Card -->
+      <div class="ticket-card" id="ticketCard">
+        <p class="college-header">ST. BENEDICT'S COLLEGE</p>
+
+        <!-- Figure 2 Vibrant Topic / 3D Title -->
+        <div class="title-stage">
+          <img src="redeus-title.png" alt="REDEUS'26" onerror="this.style.display='none'; document.getElementById('titleFallback').style.display='block';">
+          <h1 id="titleFallback" style="display:none; font-family:'Cinzel',serif; font-size:2rem; color:var(--gold); font-weight:700;">REDEUS'26</h1>
+        </div>
+
+        <p class="event-tagline">"From the First Day to the Final Bow"</p>
+
+        <div class="pass-divider">
+          <span>◆</span> OFFICIAL ENTRY PASS <span>◆</span>
+        </div>
+
+        <!-- QR Code -->
+        <div class="qr-frame">
+          <img id="qrImage" src="" alt="Official Gate Pass QR Code">
+        </div>
+
+        <!-- Student / Attendee Name -->
+        <h2 class="student-name" id="studentName">Student Name</h2>
+
+        <!-- Figure 1 Pass Details Box with Ticket Number -->
+        <div class="pass-details-box">
+          <div class="detail-col">
+            <span class="col-lbl">PASS ALLOCATION</span>
+            <span class="col-val" id="numTickets">1 PERSON</span>
+          </div>
+          <div class="detail-col">
+            <span class="col-lbl">TICKET NUMBER</span>
+            <span class="col-val mono-code" id="ticketNumber">RED-00000</span>
+          </div>
+        </div>
+
+        <p class="pass-instruction">Show this pass on your phone screen at the entrance gate.</p>
+        <p class="pass-batch">THE 2023 O/L AND 2026 A/L BATCH</p>
+
+        <div class="status-badge-wrap">
+          <div class="status-badge" id="ticketStatus"><i data-lucide="shield-check"></i> Verified Pass • Admit One</div>
+        </div>
+      </div>
+
+      <!-- Action Button -->
+      <button type="button" class="action-btn" id="downloadBtn" onclick="handlePassDownload()">
+        <i data-lucide="download"></i> <span id="downloadBtnText">Save Pass to Photos</span>
+      </button>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script>
+    var DB_URL = 'https://batch-party-69ac1-default-rtdb.firebaseio.com';
+    var QR_SECRET = 'REDEUS26-QR-SECRET-2026';
+    var currentPassDataUrl = null;
+    var currentFileName = 'REDEUS26_Ticket_Pass.png';
+    var isGeneratingPass = false;
+
+    // Parse ticket ID from URL ?id=... or ?ref=...
+    var params = new URLSearchParams(window.location.search);
+    var ticketId = params.get('id') || params.get('ref');
+
+    if (!ticketId) {
+      showError('Invalid pass link. No ticket ID provided.');
+    } else {
+      loadTicket(ticketId);
+    }
+
+    function loadTicket(id) {
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', DB_URL + '/tickets/' + encodeURIComponent(id) + '.json', true);
+      xhr.onload = function() {
+        if (xhr.status === 200) {
+          var ticket = JSON.parse(xhr.responseText);
+          if (!ticket) {
+            showError('Ticket not found in database.');
+            return;
+          }
+          if (ticket.status !== 'approved') {
+            showError('This ticket is currently ' + (ticket.status ? ticket.status.toUpperCase() : 'PENDING') + '. Please wait for committee approval.');
+            return;
+          }
+          displayTicket(ticket, id);
+        } else {
+          showError('Failed to load ticket pass. Server status: ' + xhr.status);
+        }
+      };
+      xhr.onerror = function() {
+        showError('Network error. Please check your internet connection.');
+      };
+      xhr.send();
+    }
+
+    function displayTicket(t, id) {
+      document.getElementById('loadingState').style.display = 'none';
+      document.getElementById('ticketContent').style.display = 'block';
+
+      // Clean Ticket Number without leading #
+      var rawNum = t.refId || (id ? id.substring(0, 10).toUpperCase() : 'RED-0001');
+      var cleanNum = rawNum.replace(/^#/, '');
+      document.getElementById('ticketNumber').textContent = cleanNum;
+
+      // Student / Attendee Name
+      var studentName = t.fullName || 'Guest';
+      document.getElementById('studentName').textContent = studentName;
+
+      // Pass Allocation
+      var allocText = '1 PERSON';
+      if (t.paidTogether && t.groupTotal > 1) {
+        allocText = '1 PERSON (Pass ' + (t.groupIndex || 1) + ' of ' + t.groupTotal + ')';
+        document.getElementById('numTickets').innerHTML = '1 PERSON <span class="group-tag">(Pass ' + (t.groupIndex || 1) + ' of ' + t.groupTotal + ')</span>';
+      } else {
+        var count = t.numTickets || 1;
+        allocText = count + ' ' + (count > 1 ? 'PERSONS' : 'PERSON');
+        document.getElementById('numTickets').textContent = allocText;
+      }
+
+      // Generate pure, crisp QR Code
+      var qrData = t.qrCodeData || JSON.stringify({ ticketId: id, ref: cleanNum, name: studentName, secret: QR_SECRET });
+      var cleanQrUrl = t.qrCodeImage;
+
+      try {
+        if (typeof qrcode !== 'undefined') {
+          var qr = qrcode(0, 'M');
+          qr.addData(qrData);
+          qr.make();
+          cleanQrUrl = qr.createDataURL(8, 2);
+        }
+      } catch(err) {
+        console.warn('QR code generation notice:', err);
+      }
+
+      if (cleanQrUrl) {
+        document.getElementById('qrImage').src = cleanQrUrl;
+      }
+
+      // Filename for download
+      currentFileName = 'REDEUS26_Pass_' + studentName.replace(/\s+/g, '_') + '_' + cleanNum.replace(/[^a-zA-Z0-9]/g, '') + '.png';
+
+      // Pre-generate full branded pass canvas image for instantaneous download
+      generatePassCanvas(t, id, cleanNum, allocText, qrData, function(url) {
+        currentPassDataUrl = url;
+      });
+
+      // Scanned state
+      if (t.scanned) {
+        var badge = document.getElementById('ticketStatus');
+        badge.innerHTML = '<i data-lucide="check-circle-2"></i> Already Admitted';
+        badge.className = 'status-badge admitted';
+      }
+
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+
+    // ====================================================
+    // FULL BRANDED PASS CANVAS GENERATOR (Figure 1 + Figure 2)
+    // ====================================================
+    function generatePassCanvas(t, id, cleanNum, allocText, qrData, callback) {
+      var canvas = document.createElement('canvas');
+      canvas.width = 600;
+      canvas.height = 840;
+      var ctx = canvas.getContext('2d');
+
+      // 1. Background gradient
+      var grad = ctx.createLinearGradient(0, 0, 0, 840);
+      grad.addColorStop(0, '#041306');
+      grad.addColorStop(0.5, '#020b03');
+      grad.addColorStop(1, '#010502');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 600, 840);
+
+      // Subtle ambient gold radial glow at top
+      var glow = ctx.createRadialGradient(300, 120, 10, 300, 120, 260);
+      glow.addColorStop(0, 'rgba(212, 175, 55, 0.12)');
+      glow.addColorStop(1, 'transparent');
+      ctx.fillStyle = glow;
+      ctx.fillRect(0, 0, 600, 400);
+
+      // 2. Double Gold Borders (Figure 1 style)
+      // Outer border
+      ctx.strokeStyle = '#d4af37';
+      ctx.lineWidth = 3;
+      ctx.strokeRect(18, 18, 564, 804);
+
+      // Inner border
+      ctx.strokeStyle = 'rgba(212, 175, 55, 0.42)';
+      ctx.lineWidth = 1.2;
+      ctx.strokeRect(27, 27, 546, 786);
+
+      // 3. College Header
+      ctx.fillStyle = '#d4af37';
+      ctx.font = '600 13px Cinzel, serif';
+      ctx.textAlign = 'center';
+      ctx.fillText("ST. BENEDICT'S COLLEGE", 300, 68);
+
+      function renderRest(titleImg) {
+        // 4. Vibrant 3D Chrome Title Image
+        if (titleImg && titleImg.complete && titleImg.naturalWidth > 0) {
+          var imgW = 280;
+          var imgH = (titleImg.naturalHeight / titleImg.naturalWidth) * imgW;
+          ctx.drawImage(titleImg, 300 - (imgW / 2), 80, imgW, imgH);
+        } else {
+          ctx.fillStyle = '#f0d060';
+          ctx.font = 'bold 36px Cinzel, serif';
+          ctx.fillText("REDEUS'26", 300, 122);
+        }
+
+        // 5. Tagline
+        ctx.fillStyle = '#d4af37';
+        ctx.font = 'italic 13px Inter, sans-serif';
+        ctx.globalAlpha = 0.88;
+        ctx.fillText('"From the First Day to the Final Bow"', 300, 150);
+        ctx.globalAlpha = 1.0;
+
+        // 6. Divider with diamond
+        ctx.strokeStyle = 'rgba(212, 175, 55, 0.35)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(85, 174);
+        ctx.lineTo(210, 174);
+        ctx.stroke();
+
+        ctx.fillStyle = '#d4af37';
+        ctx.font = '600 11px Cinzel, serif';
+        ctx.fillText('◆   OFFICIAL ENTRY PASS   ◆', 300, 178);
+
+        ctx.beginPath();
+        ctx.moveTo(390, 174);
+        ctx.lineTo(515, 174);
+        ctx.stroke();
+
+        // 7. White Frame for QR Code
+        ctx.fillStyle = '#ffffff';
+        if (ctx.roundRect) {
+          ctx.beginPath();
+          ctx.roundRect(145, 202, 310, 310, 18);
+          ctx.fill();
+        } else {
+          ctx.fillRect(145, 202, 310, 310);
+        }
+
+        // 8. Draw QR modules directly
+        if (typeof qrcode !== 'undefined') {
+          var qr = qrcode(0, 'M');
+          qr.addData(qrData);
+          qr.make();
+          var count = qr.getModuleCount();
+          var qrAreaSize = 270;
+          var startX = 165;
+          var startY = 222;
+          var cellSize = qrAreaSize / count;
+
+          ctx.fillStyle = '#061709';
+          for (var r = 0; r < count; r++) {
+            for (var c = 0; c < count; c++) {
+              if (qr.isDark(r, c)) {
+                ctx.fillRect(
+                  Math.round(startX + c * cellSize),
+                  Math.round(startY + r * cellSize),
+                  Math.ceil(cellSize),
+                  Math.ceil(cellSize)
+                );
+              }
+            }
+          }
+        }
+
+        // 9. Student / Attendee Name
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 24px Cinzel, serif';
+        ctx.fillText((t.fullName || 'GUEST').toUpperCase(), 300, 560);
+
+        // 10. Pass Details Box (Figure 1)
+        ctx.fillStyle = 'rgba(7, 24, 10, 0.75)';
+        ctx.strokeStyle = 'rgba(212, 175, 55, 0.32)';
+        ctx.lineWidth = 1;
+        if (ctx.roundRect) {
+          ctx.beginPath();
+          ctx.roundRect(100, 586, 400, 88, 12);
+          ctx.fill();
+          ctx.stroke();
+        } else {
+          ctx.fillRect(100, 586, 400, 88);
+          ctx.strokeRect(100, 586, 400, 88);
+        }
+
+        // Vertical divider inside box
+        ctx.strokeStyle = 'rgba(212, 175, 55, 0.2)';
+        ctx.beginPath();
+        ctx.moveTo(300, 596);
+        ctx.lineTo(300, 664);
+        ctx.stroke();
+
+        // Left Col: PASS ALLOCATION
+        ctx.fillStyle = '#809270';
+        ctx.font = '500 11px Inter, sans-serif';
+        ctx.fillText('PASS ALLOCATION', 200, 616);
+
+        ctx.fillStyle = '#d4af37';
+        ctx.font = 'bold 16px Cinzel, serif';
+        ctx.fillText(allocText.toUpperCase(), 200, 650);
+
+        // Right Col: TICKET NUMBER
+        ctx.fillStyle = '#809270';
+        ctx.font = '500 11px Inter, sans-serif';
+        ctx.fillText('TICKET NUMBER', 400, 616);
+
+        ctx.fillStyle = '#f0d060';
+        ctx.font = 'bold 16px JetBrains Mono, monospace';
+        ctx.fillText(cleanNum, 400, 650);
+
+        // 11. Instruction & Batch Note
+        ctx.fillStyle = '#809270';
+        ctx.font = '11px Inter, sans-serif';
+        ctx.fillText('Show this pass on your phone screen at the entrance gate.', 300, 712);
+
+        ctx.fillStyle = '#a6892c';
+        ctx.font = '600 11px Cinzel, serif';
+        ctx.fillText('THE 2023 O/L AND 2026 A/L BATCH', 300, 752);
+
+        var dataUrl = canvas.toDataURL('image/png');
+        if (callback) callback(dataUrl);
+      }
+
+      var existingImg = document.querySelector('.title-stage img');
+      if (existingImg && existingImg.complete && existingImg.naturalWidth > 0) {
+        renderRest(existingImg);
+      } else {
+        var img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = function() { renderRest(img); };
+        img.onerror = function() { renderRest(null); };
+        img.src = 'redeus-title.png';
+      }
+    }
+
+    // ====================================================
+    // DOWNLOAD & MOBILE SHARE HANDLER
+    // ====================================================
+    function handlePassDownload() {
+      var btn = document.getElementById('downloadBtn');
+      var btnText = document.getElementById('downloadBtnText');
+
+      if (!currentPassDataUrl) {
+        if (btnText) btnText.textContent = 'Generating Pass...';
+        var t = { fullName: document.getElementById('studentName').textContent };
+        var cleanNum = document.getElementById('ticketNumber').textContent;
+        var allocText = document.getElementById('numTickets').textContent;
+        var qrData = JSON.stringify({ ticketId: ticketId, ref: cleanNum, name: t.fullName, secret: QR_SECRET });
+
+        generatePassCanvas(t, ticketId, cleanNum, allocText, qrData, function(url) {
+          currentPassDataUrl = url;
+          executePassSave(url);
+        });
+      } else {
+        executePassSave(currentPassDataUrl);
+      }
+    }
+
+    function executePassSave(dataUrl) {
+      var btnText = document.getElementById('downloadBtnText');
+      var filename = currentFileName || 'REDEUS26_Ticket_Pass.png';
+
+      // Check for Mobile Web Share API file sharing (iPhone Photos / Android)
+      if (navigator.canShare && navigator.share) {
+        try {
+          fetch(dataUrl)
+            .then(function(res) { return res.blob(); })
+            .then(function(blob) {
+              var file = new File([blob], filename, { type: 'image/png' });
+              if (navigator.canShare({ files: [file] })) {
+                return navigator.share({
+                  title: "REDEUS'26 Entry Pass",
+                  text: "Official Entry Pass for REDEUS'26",
+                  files: [file]
+                });
+              } else {
+                directDownload(dataUrl, filename);
+              }
+            })
+            .then(function() {
+              if (btnText) btnText.textContent = '✓ Pass Saved!';
+              setTimeout(function() { if (btnText) btnText.textContent = 'Save Pass to Photos'; }, 3000);
+            })
+            .catch(function(err) {
+              if (err.name !== 'AbortError') {
+                directDownload(dataUrl, filename);
+              }
+            });
+          return;
+        } catch(e) {}
+      }
+
+      directDownload(dataUrl, filename);
+      if (btnText) btnText.textContent = '✓ Pass Saved!';
+      setTimeout(function() { if (btnText) btnText.textContent = 'Save Pass to Photos'; }, 3000);
+    }
+
+    function directDownload(dataUrl, filename) {
+      var a = document.createElement('a');
+      a.href = dataUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+
+    function showError(msg) {
+      document.getElementById('loadingState').style.display = 'none';
+      document.getElementById('errorState').style.display = 'block';
+      document.getElementById('errorMessage').textContent = msg;
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+  </script>
+</body>
+</html>
