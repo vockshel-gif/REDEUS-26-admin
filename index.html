@@ -1249,7 +1249,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     // =============================================
     // Firebase REST API — NO SDK
     // =============================================
-    var DB_URL = 'https://batch-party-69ac1-default-rtdb.firebaseio.com';
+    var DB_URL = 'https://batch-party-v2-default-rtdb.asia-southeast1.firebasedatabase.app';
     var QR_SECRET = 'REDEUS26-QR-SECRET-2026';
     // Optional: Set to your public User GitHub Pages URL (e.g. 'https://username.github.io/user-repo/')
     // If left empty, it automatically detects ticket.html in the current location.
@@ -1352,9 +1352,38 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     }
 
     // =============================================
-    // LOAD TICKETS (polling via REST API)
+    // LOAD TICKETS (Bandwidth-Protected Smart Polling)
     // =============================================
-    function loadTickets() {
+    var lastTicketKeysHash = '';
+
+    function loadTickets(forceFull) {
+      if (!forceFull && lastTicketKeysHash) {
+        // Fast shallow check (~1 KB payload only)
+        var xhrShallow = new XMLHttpRequest();
+        xhrShallow.open('GET', DB_URL + '/tickets.json?shallow=true', true);
+        xhrShallow.onload = function() {
+          if (xhrShallow.status === 200) {
+            var keysObj = JSON.parse(xhrShallow.responseText) || {};
+            var keysArr = Object.keys(keysObj).sort();
+            var newHash = keysArr.length + ':' + (keysArr[0] || '') + ':' + (keysArr[keysArr.length - 1] || '');
+            if (newHash === lastTicketKeysHash && Object.keys(allTickets).length > 0) {
+              // No changes! Bandwidth saved.
+              return;
+            }
+            fetchFullTickets(newHash);
+          } else {
+            fetchFullTickets();
+          }
+        };
+        xhrShallow.onerror = function() { fetchFullTickets(); };
+        xhrShallow.send();
+        return;
+      }
+
+      fetchFullTickets();
+    }
+
+    function fetchFullTickets(newHash) {
       var xhr = new XMLHttpRequest();
       xhr.open('GET', DB_URL + '/tickets.json', true);
       xhr.onload = function() {
@@ -1362,6 +1391,13 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
           var data = JSON.parse(xhr.responseText);
           allTickets = data || {};
           normalizedTicketsMap = {};
+
+          if (newHash) {
+            lastTicketKeysHash = newHash;
+          } else {
+            var k = Object.keys(allTickets).sort();
+            lastTicketKeysHash = k.length + ':' + (k[0] || '') + ':' + (k[k.length - 1] || '');
+          }
 
           var flatList = getNormalizedTickets(allTickets);
           flatList.forEach(function(item) {
@@ -1486,9 +1522,9 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     }
 
     function startAdminSession() {
-      loadTickets();
+      loadTickets(true);
       if (!refreshIntervalId) {
-        refreshIntervalId = setInterval(loadTickets, 5000);
+        refreshIntervalId = setInterval(function() { loadTickets(false); }, 15000);
       }
       setTimeout(function(){ if(typeof lucide !== 'undefined') lucide.createIcons(); }, 120);
     }
@@ -2542,7 +2578,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
         ' */',
         'function syncRedeusTickets() {',
         '  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();',
-        '  var firebaseUrl = "https://batch-party-69ac1-default-rtdb.firebaseio.com/tickets.json";',
+        '  var firebaseUrl = "https://batch-party-v2-default-rtdb.asia-southeast1.firebasedatabase.app/tickets.json";',
         '',
         '  var response = UrlFetchApp.fetch(firebaseUrl, { muteHttpExceptions: true });',
         '  if (response.getResponseCode() !== 200) {',
